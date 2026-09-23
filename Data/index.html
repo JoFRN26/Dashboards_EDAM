@@ -794,7 +794,7 @@ function renderCharts() {
     data: { labels, datasets: [
       {label:'30 días', data:d.dis30, borderColor:'#1F4E79', borderWidth:1.7, tension:0.25, fill:false},
       {label:'60 días', data:d.dis60, borderColor:'#888780', borderWidth:1.5, tension:0.25, fill:false, borderDash:[4,3]},
-      {label:'180 días', data:d.dis180, borderColor:'#BA7517', borderWidth:1.5, tension:0.25, fill:false}
+      {label:'180 días', data:d.dis180, borderColor:'#BA7517', borderWidth:1.5, tension:0.25, fill:false},
       {label:'360 días', data:d.dis360, borderColor:'#7FA6C9', borderWidth:1.5, tension:0.25, fill:false, borderDash:[6,3]}
     ]},
     options: optsBase(v => Number(v).toFixed(2) + '%')
