@@ -254,12 +254,17 @@
   <!-- Tarjetas de tracking / ejecución -->
   <div class="metric-section">
     <div class="sec-label etf-label">Ejecución y tracking</div>
-    <div class="metric-row-five">
+    <div class="metric-row">
       <div class="metric etf"><div class="m-label">TE 30 días</div><div class="m-value" id="m-te30">—</div><div class="m-sub">tracking error</div></div>
       <div class="metric etf"><div class="m-label">TE 60 días</div><div class="m-value" id="m-te60">—</div><div class="m-sub">tracking error</div></div>
       <div class="metric etf"><div class="m-label">TE 180 días</div><div class="m-value" id="m-te180">—</div><div class="m-sub">tracking error</div></div>
+      <div class="metric etf"><div class="m-label">TE 360 días</div><div class="m-value" id="m-te360">—</div><div class="m-sub">tracking error</div></div>
+    </div>
+    <div class="metric-row" style="margin-top:10px;">
       <div class="metric etf"><div class="m-label">Slippage 30 días</div><div class="m-value" id="m-slip30">—</div><div class="m-sub">slippage</div></div>
       <div class="metric etf"><div class="m-label">Slippage 60 días</div><div class="m-value" id="m-slip60">—</div><div class="m-sub">slippage</div></div>
+      <div class="metric etf"><div class="m-label">Slippage 180 días</div><div class="m-value" id="m-slip180">—</div><div class="m-sub">slippage</div></div>
+      <div class="metric etf"><div class="m-label">Slippage 360 días</div><div class="m-value" id="m-slip360">—</div><div class="m-sub">slippage</div></div>
     </div>
   </div>
 
@@ -379,15 +384,31 @@
     </div>
   </div>
 
-  <!-- Gráficos: Slippage y Tracking Error -->
-  <div class="grid-3">
+  <!-- Tracking Error — gráfico grande con las cuatro ventanas -->
+  <div class="grid-full">
+    <div class="card">
+      <div class="card-header"><span class="card-title">Tracking Error</span></div>
+      <div class="legend">
+        <div class="legend-item"><div class="legend-dot" style="background:#1F4E79;"></div>30 días</div>
+        <div class="legend-item"><div class="legend-dot" style="background:#888780;"></div>60 días</div>
+        <div class="legend-item"><div class="legend-dot" style="background:#BA7517;"></div>180 días</div>
+        <div class="legend-item"><div class="legend-dot" style="background:#7FA6C9;"></div>360 días</div>
+      </div>
+      <div style="position:relative;width:100%;height:260px;">
+        <canvas id="teChart" role="img" aria-label="Tracking Error de 30, 60, 180 y 360 días"></canvas>
+      </div>
+    </div>
+  </div>
+
+  <!-- Slippage — cuatro ventanas en 2x2 -->
+  <div class="grid-2">
     <div class="card">
       <div class="card-header"><span class="card-title">Slippage 30 días</span></div>
       <div class="legend">
         <div class="legend-item"><div class="legend-dot" style="background:#1F4E79;"></div>Slippage</div>
         <div class="legend-item"><div class="legend-dot" style="background:#888780;"></div>Media histórica</div>
       </div>
-      <div style="position:relative;width:100%;height:180px;">
+      <div style="position:relative;width:100%;height:200px;">
         <canvas id="slip30Chart" role="img" aria-label="Slippage 30 días y media histórica"></canvas>
       </div>
     </div>
@@ -397,19 +418,31 @@
         <div class="legend-item"><div class="legend-dot" style="background:#1F4E79;"></div>Slippage</div>
         <div class="legend-item"><div class="legend-dot" style="background:#888780;"></div>Media histórica</div>
       </div>
-      <div style="position:relative;width:100%;height:180px;">
+      <div style="position:relative;width:100%;height:200px;">
         <canvas id="slip60Chart" role="img" aria-label="Slippage 60 días y media histórica"></canvas>
       </div>
     </div>
+  </div>
+
+  <div class="grid-2">
     <div class="card">
-      <div class="card-header"><span class="card-title">Tracking Error</span></div>
+      <div class="card-header"><span class="card-title">Slippage 180 días</span></div>
       <div class="legend">
-        <div class="legend-item"><div class="legend-dot" style="background:#1F4E79;"></div>30 días</div>
-        <div class="legend-item"><div class="legend-dot" style="background:#888780;"></div>60 días</div>
-        <div class="legend-item"><div class="legend-dot" style="background:#BA7517;"></div>180 días</div>
+        <div class="legend-item"><div class="legend-dot" style="background:#1F4E79;"></div>Slippage</div>
+        <div class="legend-item"><div class="legend-dot" style="background:#888780;"></div>Media histórica</div>
       </div>
-      <div style="position:relative;width:100%;height:180px;">
-        <canvas id="teChart" role="img" aria-label="Tracking Error de 30, 60 y 180 días"></canvas>
+      <div style="position:relative;width:100%;height:200px;">
+        <canvas id="slip180Chart" role="img" aria-label="Slippage 180 días y media histórica"></canvas>
+      </div>
+    </div>
+    <div class="card">
+      <div class="card-header"><span class="card-title">Slippage 360 días</span></div>
+      <div class="legend">
+        <div class="legend-item"><div class="legend-dot" style="background:#1F4E79;"></div>Slippage</div>
+        <div class="legend-item"><div class="legend-dot" style="background:#888780;"></div>Media histórica</div>
+      </div>
+      <div style="position:relative;width:100%;height:200px;">
+        <canvas id="slip360Chart" role="img" aria-label="Slippage 360 días y media histórica"></canvas>
       </div>
     </div>
   </div>
@@ -477,8 +510,11 @@ function buildSampleData() {
   const te30 = genSeries(0.85, 0.025, N).map(v=>Math.max(0.2,Math.min(2.0,v)));
   const te60 = genSeries(0.75, 0.02, N).map(v=>Math.max(0.15,Math.min(1.8,v)));
   const te180 = genSeries(0.65, 0.015, N).map(v=>Math.max(0.1,Math.min(1.5,v)));
+  const te360 = genSeries(0.60, 0.012, N).map(v=>Math.max(0.1,Math.min(1.4,v)));
   const slip30 = genSeries(0.18, 0.012, N).map(v=>Math.max(0.01,Math.min(0.8,v)));
   const slip60 = genSeries(0.15, 0.009, N).map(v=>Math.max(0.01,Math.min(0.7,v)));
+  const slip180 = genSeries(0.13, 0.007, N).map(v=>Math.max(0.01,Math.min(0.6,v)));
+  const slip360 = genSeries(0.12, 0.005, N).map(v=>Math.max(0.01,Math.min(0.5,v)));
   const dis30 = genSeries(0.30, 0.02, N);
   const dis60 = genSeries(0.25, 0.015, N);
   const dis180 = genSeries(0.20, 0.01, N);
@@ -491,7 +527,7 @@ function buildSampleData() {
   const drawdown = nav.map(v => { peak = Math.max(peak, v); return parseFloat(((v/peak-1)*100).toFixed(4)); });
   let maxDD = 0;
   const maximumDrawdown = drawdown.map(v => { maxDD = Math.min(maxDD, v); return parseFloat(maxDD.toFixed(4)); });
-  return { DATES:DATES_ALL, nav, vwap, navb, dur, durb, ytm, ytmb, cup, cupb, patrimonio, participes, volumen, operaciones, te30, te60, te180, slip30, slip60, dis30, dis60, dis180, volmed30, volmed60, volmed180, etf_ac, bench_ac, drawdown, maximumDrawdown };
+  return { DATES:DATES_ALL, nav, vwap, navb, dur, durb, ytm, ytmb, cup, cupb, patrimonio, participes, volumen, operaciones, te30, te60, te180, te360, slip30, slip60, slip180, slip360, dis30, dis60, dis180, volmed30, volmed60, volmed180, etf_ac, bench_ac, drawdown, maximumDrawdown };
 }
 
 let DATA = buildSampleData();
@@ -512,7 +548,7 @@ function sliceData(d) {
     const s = Math.max(0, d.DATES.length - n);
     for (let i = s; i < d.DATES.length; i++) indices.push(i);
   }
-  const keys = ['DATES','nav','vwap','navb','dur','durb','ytm','ytmb','cup','cupb','patrimonio','participes','volumen','operaciones','te30','te60','te180','slip30','slip60','dis30','dis60','dis180','volmed30','volmed60','volmed180','etf_ac','bench_ac','drawdown','maximumDrawdown'];
+  const keys = ['DATES','nav','vwap','navb','dur','durb','ytm','ytmb','cup','cupb','patrimonio','participes','volumen','operaciones','te30','te60','te180','te360','slip30','slip60','slip180','slip360','dis30','dis60','dis180','volmed30','volmed60','volmed180','etf_ac','bench_ac','drawdown','maximumDrawdown'];
   const out = {};
   keys.forEach(k => { out[k] = Array.isArray(d[k]) ? indices.map(i => d[k][i]) : d[k]; });
   return out;
@@ -832,37 +868,34 @@ function renderCharts() {
     }
   });
 
-  // Slippage 30 días — serie + media histórica de toda la muestra
-  const slip30Mean = historicalMean(DATA.slip30);
-  charts.slip30 = new Chart(document.getElementById('slip30Chart'), {
-    type: 'line',
-    data: { labels, datasets: [
-      {label:'Slippage', data:d.slip30, borderColor:'#1F4E79', borderWidth:1.5, tension:0.3, fill:false},
-      {label:'Media histórica', data:Array(d.DATES.length).fill(slip30Mean), borderColor:'#888780', borderWidth:1.2, borderDash:[5,4], pointRadius:0, tension:0, fill:false}
-    ]},
-    options: optsBase(v => v.toFixed(2)+'%')
-  });
-
-  // Slippage 60 días — serie + media histórica de toda la muestra
-  const slip60Mean = historicalMean(DATA.slip60);
-  charts.slip60 = new Chart(document.getElementById('slip60Chart'), {
-    type: 'line',
-    data: { labels, datasets: [
-      {label:'Slippage', data:d.slip60, borderColor:'#1F4E79', borderWidth:1.5, tension:0.3, fill:false},
-      {label:'Media histórica', data:Array(d.DATES.length).fill(slip60Mean), borderColor:'#888780', borderWidth:1.2, borderDash:[5,4], pointRadius:0, tension:0, fill:false}
-    ]},
-    options: optsBase(v => v.toFixed(2)+'%')
-  });
-
-  // Tracking Error — 30, 60 y 180 días
+  // Tracking Error — 30, 60, 180 y 360 días
   charts.te = new Chart(document.getElementById('teChart'), {
     type: 'line',
     data: { labels, datasets: [
-      {label:'30 días', data:d.te30, borderColor:'#1F4E79', borderWidth:1.5, tension:0.3, fill:false},
+      {label:'30 días', data:d.te30, borderColor:'#1F4E79', borderWidth:1.7, tension:0.3, fill:false},
       {label:'60 días', data:d.te60, borderColor:'#888780', borderWidth:1.5, tension:0.3, fill:false, borderDash:[4,3]},
-      {label:'180 días', data:d.te180, borderColor:'#BA7517', borderWidth:1.5, tension:0.3, fill:false}
+      {label:'180 días', data:d.te180, borderColor:'#BA7517', borderWidth:1.5, tension:0.3, fill:false},
+      {label:'360 días', data:d.te360, borderColor:'#7FA6C9', borderWidth:1.5, tension:0.3, fill:false, borderDash:[6,3]}
     ]},
     options: optsBase(v => v.toFixed(2)+'%')
+  });
+
+  // Slippage — una tarjeta por ventana, cada una con su media histórica
+  [
+    {key:'slip30',  canvas:'slip30Chart'},
+    {key:'slip60',  canvas:'slip60Chart'},
+    {key:'slip180', canvas:'slip180Chart'},
+    {key:'slip360', canvas:'slip360Chart'}
+  ].forEach(s => {
+    const mean = historicalMean(DATA[s.key]);
+    charts[s.key] = new Chart(document.getElementById(s.canvas), {
+      type: 'line',
+      data: { labels, datasets: [
+        {label:'Slippage', data:d[s.key], borderColor:'#1F4E79', borderWidth:1.5, tension:0.3, fill:false},
+        {label:'Media histórica', data:Array(d.DATES.length).fill(mean), borderColor:'#888780', borderWidth:1.2, borderDash:[5,4], pointRadius:0, tension:0, fill:false}
+      ]},
+      options: optsBase(v => v.toFixed(2)+'%')
+    });
   });
 
   charts.volMedian = new Chart(document.getElementById('volMedianChart'), {
@@ -917,8 +950,11 @@ function updateKPIs(d) {
   document.getElementById('m-te30').textContent = fmtPct(lastValid('te30'));
   document.getElementById('m-te60').textContent = fmtPct(lastValid('te60'));
   document.getElementById('m-te180').textContent = fmtPct(lastValid('te180'));
+  document.getElementById('m-te360').textContent = fmtPct(lastValid('te360'));
   document.getElementById('m-slip30').textContent = fmtPct(lastValid('slip30'));
   document.getElementById('m-slip60').textContent = fmtPct(lastValid('slip60'));
+  document.getElementById('m-slip180').textContent = fmtPct(lastValid('slip180'));
+  document.getElementById('m-slip360').textContent = fmtPct(lastValid('slip360'));
 }
 
 function setRange(btn, r) {
@@ -1044,8 +1080,11 @@ function handleFile(evt) {
       const iTe30   = col('te 30 días','te 30 dias','te30','te30d','te30dias','tracking error 30','trackingerror30','trackingerror30dias');
       const iTe60   = col('te 60 días','te 60 dias','te60','te60d','te60dias','tracking error 60','trackingerror60','trackingerror60dias');
       const iTe180  = col('te 180 días','te 180 dias','te180','te180d','te180dias','tracking error 180','trackingerror180','trackingerror180dias');
+      const iTe360  = col('te 360 días','te 360 dias','te360','te360d','te360dias','tracking error 360','trackingerror360','trackingerror360dias');
       const iSlip30 = col('slippage 30 días','slippage 30 dias','slippage30','slippage30d','slippage30dias','slipapge 30 días','slipapge 30 dias','slipapge30','slipapge30d');
       const iSlip60 = col('slippage 60 días','slippage 60 dias','slippage60','slippage60d','slippage60dias','slipapge 60 días','slipapge 60 dias','slipapge60','slipapge60d');
+      const iSlip180 = col('slippage 180 días','slippage 180 dias','slippage180','slippage180d','slippage180dias','slipapge 180 días','slipapge 180 dias','slipapge180','slipapge180d');
+      const iSlip360 = col('slippage 360 días','slippage 360 dias','slippage360','slippage360d','slippage360dias','slipapge 360 días','slipapge 360 dias','slipapge360','slipapge360d');
       const iDis30 = col('dislocation 30 días','dislocation 30 dias','dislocation30','dislocation30d','dislocation30dias');
       const iDis60 = col('dislocation 60 días','dislocation 60 dias','dislocation60','dislocation60d','dislocation60dias');
       const iDis180 = col('dislocation 180 días','dislocation 180 dias','dislocation180','dislocation180d','dislocation180dias');
@@ -1054,7 +1093,7 @@ function handleFile(evt) {
       const iVolMed180 = col('vol mediana 180 días','vol mediana 180 dias','volmediana180','volmediana180d','volmediana180dias');
 
       const data = rows.slice(headerRow + 1).filter(r => r[iDate] !== undefined && r[iDate] !== '' && r[iNav] !== undefined && r[iNav] !== '');
-      const DATES=[],nav=[],vwap=[],navb=[],dur=[],durb=[],ytm=[],ytmb=[],cup=[],cupb=[],patrimonio=[],participes=[],volumen=[],operaciones=[],te30=[],te60=[],te180=[],slip30=[],slip60=[],dis30=[],dis60=[],dis180=[],volmed30=[],volmed60=[],volmed180=[],etf_ac=[],bench_ac=[],drawdown=[],maximumDrawdown=[];
+      const DATES=[],nav=[],vwap=[],navb=[],dur=[],durb=[],ytm=[],ytmb=[],cup=[],cupb=[],patrimonio=[],participes=[],volumen=[],operaciones=[],te30=[],te60=[],te180=[],te360=[],slip30=[],slip60=[],slip180=[],slip360=[],dis30=[],dis60=[],dis180=[],volmed30=[],volmed60=[],volmed180=[],etf_ac=[],bench_ac=[],drawdown=[],maximumDrawdown=[];
 
       data.forEach(r => {
         const rawDate = r[iDate];
@@ -1076,8 +1115,11 @@ function handleFile(evt) {
         te30.push(iTe30>=0 ? (num(r[iTe30])) : 0);
         te60.push(iTe60>=0 ? (num(r[iTe60])) : 0);
         te180.push(iTe180>=0 ? (num(r[iTe180])) : 0);
+        te360.push(iTe360>=0 ? (num(r[iTe360])) : 0);
         slip30.push(iSlip30>=0 ? (num(r[iSlip30])) : 0);
         slip60.push(iSlip60>=0 ? (num(r[iSlip60])) : 0);
+        slip180.push(iSlip180>=0 ? (num(r[iSlip180])) : 0);
+        slip360.push(iSlip360>=0 ? (num(r[iSlip360])) : 0);
         const dis30Val = iDis30 >= 0 ? num(r[iDis30]) : null;
         const dis60Val = iDis60 >= 0 ? num(r[iDis60]) : null;
         const dis180Val = iDis180 >= 0 ? num(r[iDis180]) : null;
@@ -1106,8 +1148,8 @@ function handleFile(evt) {
         }
       }
 
-      DATA = {DATES, nav, vwap, navb, dur, durb, ytm, ytmb, cup, cupb, patrimonio, participes, volumen, operaciones, te30, te60, te180, slip30, slip60, dis30, dis60, dis180, volmed30, volmed60, volmed180, etf_ac, bench_ac, drawdown, maximumDrawdown};
-      document.getElementById('status-text').textContent = '✓ '+file.name+' — '+data.length+' días cargados | YTM: '+(iYtm>=0?'ETFPESOV ✓':'—')+'/'+(iYtmb>=0?'Benchmark ✓':'—')+' | Cupón: '+(iCup>=0?'ETFPESOV ✓':'—')+'/'+(iCupb>=0?'Benchmark ✓':'—')+' | NAV/VWAP: '+(iNav>=0?'✓':'—')+'/'+(iVwap>=0?'✓':'—')+' | TE: '+(iTe30>=0?'✓':'—')+'/'+(iTe60>=0?'✓':'—')+'/'+(iTe180>=0?'✓':'—')+' | Slippage: '+(iSlip30>=0?'✓':'—')+'/'+(iSlip60>=0?'✓':'—')+' | Drawdown: '+(iDrawdown>=0?'✓':'—')+'/'+(iMaxDrawdown>=0?'✓':'—')+' | Dislocation: '+(iDis30>=0?'✓':'—')+'/'+(iDis60>=0?'✓':'—')+'/'+(iDis180>=0?'✓':'—')+' | Vol Mediana: '+(iVolMed30>=0?'✓':'—')+'/'+(iVolMed60>=0?'✓':'—')+'/'+(iVolMed180>=0?'✓':'—');
+      DATA = {DATES, nav, vwap, navb, dur, durb, ytm, ytmb, cup, cupb, patrimonio, participes, volumen, operaciones, te30, te60, te180, te360, slip30, slip60, slip180, slip360, dis30, dis60, dis180, volmed30, volmed60, volmed180, etf_ac, bench_ac, drawdown, maximumDrawdown};
+      document.getElementById('status-text').textContent = '✓ '+file.name+' — '+data.length+' días cargados | YTM: '+(iYtm>=0?'ETFPESOV ✓':'—')+'/'+(iYtmb>=0?'Benchmark ✓':'—')+' | Cupón: '+(iCup>=0?'ETFPESOV ✓':'—')+'/'+(iCupb>=0?'Benchmark ✓':'—')+' | NAV/VWAP: '+(iNav>=0?'✓':'—')+'/'+(iVwap>=0?'✓':'—')+' | TE: '+(iTe30>=0?'✓':'—')+'/'+(iTe60>=0?'✓':'—')+'/'+(iTe180>=0?'✓':'—')+'/'+(iTe360>=0?'✓':'—')+' | Slippage: '+(iSlip30>=0?'✓':'—')+'/'+(iSlip60>=0?'✓':'—')+'/'+(iSlip180>=0?'✓':'—')+'/'+(iSlip360>=0?'✓':'—')+' | Drawdown: '+(iDrawdown>=0?'✓':'—')+'/'+(iMaxDrawdown>=0?'✓':'—')+' | Dislocation: '+(iDis30>=0?'✓':'—')+'/'+(iDis60>=0?'✓':'—')+'/'+(iDis180>=0?'✓':'—')+' | Vol Mediana: '+(iVolMed30>=0?'✓':'—')+'/'+(iVolMed60>=0?'✓':'—')+'/'+(iVolMed180>=0?'✓':'—');
       document.getElementById('nav-date').textContent = DATES[0]+' – '+DATES[DATES.length-1];
       syncDateControls();
       renderCharts();
