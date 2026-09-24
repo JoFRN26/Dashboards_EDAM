@@ -294,14 +294,13 @@
   <!-- Segundo gráfico grande: NAV, NAV con dividendos y VWAP -->
   <div class="grid-full">
     <div class="card">
-      <div class="card-header"><span class="card-title">NAV, NAV con dividendos y VWAP</span></div>
+      <div class="card-header"><span class="card-title">NAV vs VWAP</span></div>
       <div class="legend">
         <div class="legend-item"><div class="legend-dot" style="background:#1F4E79;"></div>NAV</div>
-        <div class="legend-item"><div class="legend-dot" style="background:#BA7517;"></div>NAV con dividendos</div>
         <div class="legend-item"><div class="legend-dot" style="background:#888780;"></div>VWAP</div>
       </div>
       <div style="position:relative;width:100%;height:260px;">
-        <canvas id="navVwapChart" role="img" aria-label="NAV, NAV con dividendos y VWAP"></canvas>
+        <canvas id="navVwapChart" role="img" aria-label="NAV y VWAP"></canvas>
       </div>
     </div>
   </div>
@@ -797,10 +796,9 @@ function renderCharts() {
     type: 'line',
     data: { labels, datasets: [
       {label:'NAV', data:d.nav, borderColor:'#1F4E79', borderWidth:1.7, tension:0.25, fill:false},
-      {label:'NAV con dividendos', data:d.navdiv, borderColor:'#BA7517', borderWidth:1.5, tension:0.25, fill:false},
       {label:'VWAP', data:d.vwap, borderColor:'#888780', borderWidth:1.5, tension:0.25, fill:false, borderDash:[5,4]}
     ]},
-    options: optsBase(v => 'S/ '+Number(v).toFixed(4))
+    options: optsBase(v => 'US$ '+Number(v).toFixed(4))
   });
 
   charts.dislocation = new Chart(document.getElementById('dislocationChart'), {
@@ -881,7 +879,7 @@ function renderCharts() {
       elements:{point:{radius:0}},
       scales:{
         x:{ticks:{font:{size:10},autoSkip:false,maxRotation:45,minRotation:45,color:'#888',callback:function(val,i){const lbl=this.getLabelForValue(i);return lbl||null;}},grid:{display:false}},
-        yPat:{position:'left',ticks:{font:{size:10},color:'#888',callback:v=>'S/ '+(v/1000000).toFixed(1)+' M'},grid:{color:'rgba(128,128,128,0.08)'}},
+        yPat:{position:'left',ticks:{font:{size:10},color:'#888',callback:v=>'US$ '+(v/1000000).toFixed(1)+' M'},grid:{color:'rgba(128,128,128,0.08)'}},
         yPart:{position:'right',ticks:{font:{size:10},color:'#888',callback:v=>Math.round(v)},grid:{display:false}}
       }
     }
@@ -954,7 +952,7 @@ function updateKPIs(d) {
     ? (nav_last/nav_prev - 1)*100
     : null;
 
-  document.getElementById('m-nav').textContent = nav_last !== null ? 'S/ '+nav_last.toFixed(4) : '—';
+  document.getElementById('m-nav').textContent = nav_last !== null ? 'US$ '+nav_last.toFixed(4) : '—';
   const chgEl = document.getElementById('m-nav-chg');
   if (nav_chg === null) {
     chgEl.textContent = '—';
@@ -966,7 +964,7 @@ function updateKPIs(d) {
 
   const fmtPct = v => v === null ? '—' : v.toFixed(2)+'%';
   const fmtTC  = v => v === null ? '—' : v.toFixed(4);
-  const fmtNAV = v => v === null ? '—' : 'S/ '+v.toFixed(4);
+  const fmtNAV = v => v === null ? '—' : 'US$ '+v.toFixed(4);
 
   document.getElementById('m-dy').textContent    = fmtPct(lastValid('dy'));
   document.getElementById('m-tc').textContent    = fmtTC(lastValid('tc'));
