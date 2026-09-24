@@ -1,0 +1,1239 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Dashboard — ETFPESOV</title>
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@tabler/icons-webfont@2.44.0/tabler-icons.min.css">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+<style>
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+  :root {
+    --bg: #f8f8f6;
+    --surface: #ffffff;
+    --surface2: #f2f1ee;
+    --border: rgba(0,0,0,0.10);
+    --border-md: rgba(0,0,0,0.18);
+    --text: #1a1a18;
+    --text-sec: #6b6b67;
+    --text-hint: #9a9a96;
+    --blue: #1F4E79;
+    --blue-bg: #e8eef3;
+    --blue-text: #163449;
+    --green: #0F6E56;
+    --green-bg: #e1f5ee;
+    --green-text: #085041;
+    --red: #A32D2D;
+    --red-bg: #fcebeb;
+    --red-text: #791f1f;
+    --amber: #BA7517;
+    --amber-bg: #faeeda;
+    --amber-text: #633806;
+    --gray: #5F5E5A;
+    --radius: 8px;
+    --radius-lg: 12px;
+    --etf: #1F4E79;
+    --bench: #888780;
+  }
+  @media (prefers-color-scheme: dark) {
+    :root {
+      --bg: #1c1c1a; --surface: #252523; --surface2: #2e2e2b;
+      --border: rgba(255,255,255,0.10); --border-md: rgba(255,255,255,0.18);
+      --text: #f0efec; --text-sec: #a0a09a; --text-hint: #6e6e68;
+      --blue: #6FA0C7; --blue-bg: #16283b; --blue-text: #a9cbe4;
+      --green: #1D9E75; --green-bg: #063825; --green-text: #5dcaa5;
+      --red: #E24B4A; --red-bg: #3d1515; --red-text: #f09595;
+      --amber: #EF9F27; --amber-bg: #3d2408; --amber-text: #fac775;
+    }
+  }
+  html { font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', system-ui, sans-serif; font-size: 15px; background: var(--bg); color: var(--text); }
+  body { min-height: 100vh; }
+  .page { max-width: 1200px; margin: 0 auto; padding: 2rem 1.5rem; }
+
+  /* Header */
+  .header { display: flex; justify-content: space-between; align-items: flex-start; flex-wrap: wrap; gap: 1rem; margin-bottom: 1.5rem; border-bottom: 0.5px solid var(--border); padding-bottom: 1.25rem; }
+  .header-left h1 { font-size: 20px; font-weight: 500; }
+  .header-left p { font-size: 13px; color: var(--text-sec); margin-top: 3px; }
+  .header-right { display: flex; flex-direction: column; align-items: flex-end; gap: 10px; }
+  .badges { display: flex; gap: 6px; flex-wrap: wrap; }
+  .badge { font-size: 11px; font-weight: 500; padding: 3px 10px; border-radius: var(--radius); }
+  .badge-blue { background: var(--blue-bg); color: var(--blue-text); }
+  .badge-green { background: var(--green-bg); color: var(--green-text); }
+  .date-range { display: flex; gap: 5px; }
+  .range-btn { font-size: 11px; padding: 3px 10px; border-radius: var(--radius); border: 0.5px solid var(--border-md); background: transparent; color: var(--text-sec); cursor: pointer; transition: background 0.12s; }
+  .range-btn:hover { background: var(--surface2); }
+  .range-btn.active { background: var(--blue-bg); color: var(--blue-text); border-color: transparent; }
+
+  /* Upload */
+  .upload-zone { border: 1.5px dashed var(--border-md); border-radius: var(--radius-lg); padding: 1.5rem; text-align: center; margin-bottom: 1.5rem; cursor: pointer; transition: background 0.15s; }
+  .upload-zone:hover { background: var(--surface2); }
+  .upload-zone i { font-size: 26px; color: var(--text-hint); display: block; margin-bottom: 6px; }
+  .up-title { font-size: 14px; font-weight: 500; color: var(--text); margin-bottom: 3px; }
+  .up-hint { font-size: 12px; color: var(--text-sec); }
+  .file-input { display: none; }
+  .up-btn { display: inline-flex; align-items: center; gap: 6px; font-size: 12px; font-weight: 500; padding: 6px 14px; border-radius: var(--radius); border: 0.5px solid var(--border-md); background: transparent; color: var(--text); cursor: pointer; margin-top: 10px; }
+  .up-btn:hover { background: var(--surface2); }
+  .status { display: flex; align-items: center; justify-content: center; gap: 7px; font-size: 12px; color: var(--text-sec); margin-top: 8px; }
+  .dot { width: 7px; height: 7px; border-radius: 50%; background: var(--green); flex-shrink: 0; }
+
+  /* Section labels */
+  .sec-label { display: flex; align-items: center; gap: 7px; font-size: 12.5px; font-weight: 600; color: var(--text-hint); margin-bottom: 8px; }
+  .sec-label::before { content: ''; width: 8px; height: 8px; border-radius: 2px; background: currentColor; flex-shrink: 0; }
+  .sec-label.etf-label { color: var(--blue-text); }
+  .sec-label.bench-label { color: var(--text-hint); }
+
+  /* Metric rows */
+  .metric-section { margin-bottom: 1.25rem; }
+  .metric-row { display: grid; grid-template-columns: repeat(4, 1fr); gap: 10px; }
+  .metric-row-five { display: grid; grid-template-columns: repeat(5, 1fr); gap: 10px; }
+  .metric { border-radius: var(--radius); padding: 12px 14px; }
+  .metric.etf { background: var(--blue-bg); }
+  .metric.bench { background: var(--surface2); }
+  .metric .m-label { font-size: 12px; color: var(--text-sec); margin-bottom: 4px; }
+  .metric .m-value { font-family: 'JetBrains Mono', ui-monospace, monospace; font-size: 22px; font-weight: 500; color: var(--text); line-height: 1.2; letter-spacing: -0.02em; }
+  .metric .m-sub { font-size: 11px; margin-top: 3px; color: var(--text-hint); }
+  .metric.metric-hero .m-value { font-size: 32px; font-weight: 600; }
+  .metric.metric-hero .m-label { font-size: 12.5px; font-weight: 600; }
+  .pos { color: var(--green); }
+  .neg { color: var(--red); }
+  .neu { color: var(--text-hint); }
+
+  /* Cards */
+  .card { background: var(--surface); border: 0.5px solid var(--border); border-radius: var(--radius-lg); padding: 1rem 1.25rem; }
+  .card-title { font-size: 13px; font-weight: 500; color: var(--text); }
+  .card-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 10px; }
+  .card-primary { border-top: 3px solid var(--blue); }
+  .card-primary .card-title { font-size: 14px; font-weight: 600; }
+  .grid-full { margin-bottom: 1rem; }
+
+  .grid-2 { display:grid; grid-template-columns:repeat(2,minmax(0,1fr)); gap:1rem; margin-bottom:1rem; }
+  @media (max-width: 800px) { .grid-2 { grid-template-columns:1fr; } }
+  .grid-3 { display: grid; grid-template-columns: repeat(auto-fit, minmax(280px, 1fr)); gap: 1rem; margin-bottom: 1rem; }
+
+  /* Legend */
+  .legend { display: flex; gap: 12px; flex-wrap: wrap; margin-bottom: 8px; }
+  .legend-item { display: flex; align-items: center; gap: 5px; font-size: 11px; color: var(--text-sec); }
+  .legend-dot { width: 10px; height: 10px; border-radius: 2px; flex-shrink: 0; }
+
+  /* Comparative returns table */
+  .returns-wrap { overflow-x: auto; }
+  .returns-table { width: 100%; border-collapse: collapse; font-size: 13px; }
+  .returns-table th,
+  .returns-table td { padding: 11px 14px; border-bottom: 0.5px solid var(--border); text-align: right; }
+  .returns-table th:first-child,
+  .returns-table td:first-child { text-align: left; }
+  .returns-table th { color: var(--text-sec); font-size: 11px; font-weight: 500; text-transform: uppercase; letter-spacing: 0.04em; }
+  .returns-table td { font-family: 'JetBrains Mono', ui-monospace, monospace; font-variant-numeric: tabular-nums; }
+  .returns-table tbody tr:last-child td { border-bottom: none; }
+  .returns-name { font-weight: 500; }
+  .returns-value.pos { color: var(--green); }
+  .returns-value.neg { color: var(--red); }
+
+  /* Footer */
+  .footer { margin-top: 2rem; padding-top: 1rem; border-top: 0.5px solid var(--border); display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 8px; }
+  .footer p { font-size: 11px; color: var(--text-hint); }
+
+  @media (max-width: 700px) {
+    .metric-row { grid-template-columns: repeat(2, 1fr); }
+    .metric-row-five { grid-template-columns: repeat(2, 1fr); }
+    .page { padding: 1rem; }
+  }
+</style>
+</head>
+<body>
+<div class="page">
+
+  <div class="header">
+    <div class="header-left">
+      <h1>ETFPESOV — Dashboard de gestión</h1>
+      <p>Período de la Data · <span id="nav-date">ene 2024 – dic 2024</span></p>
+    </div>
+    <div class="header-right">
+      <div class="badges">
+        <span class="badge badge-blue">Renta fija</span>
+        <span class="badge badge-green">NAV actualizado</span>
+      </div>
+      <div class="date-range">
+        <button class="range-btn active" onclick="setRange(this,'1M')">1M</button>
+        <button class="range-btn" onclick="setRange(this,'3M')">3M</button>
+        <button class="range-btn" onclick="setRange(this,'6M')">6M</button>
+        <button class="range-btn" onclick="setRange(this,'YTD')">YTD</button>
+        <button class="range-btn" onclick="setRange(this,'1A')">1A</button>
+      </div>
+      <div class="date-controls">
+        <label for="dateFrom">Desde</label>
+        <input type="date" id="dateFrom">
+        <label for="dateTo">Hasta</label>
+        <input type="date" id="dateTo">
+        <button class="date-apply" onclick="applyCustomRange()">Aplicar</button>
+      </div>
+    </div>
+  </div>
+
+<div class="upload-zone" id="dropzone" onclick="document.getElementById('fileInput').click()">
+    <i class="ti ti-upload"></i>
+    <div class="up-title">Arrastra tu Excel o haz clic para cargar</div>
+    <div class="up-hint">Columnas: Fecha · NAV · Patrimonio · Partícipes · Volumen · Operaciones · TE 30 días · TE 60 días · TE 180 días · Slippage 30 días · Slippage 60 días · Duración · YTM · Cupón · NAV_Benchmark · Dur_Benchmark · YTM_Benchmark · Cupón_Benchmark · ETFPESOV_Ac% · BENCHMARK_Ac% · Drawdown · Maximum Drawdown</div>
+    <button class="up-btn" onclick="event.stopPropagation()"><i class="ti ti-file"></i> Seleccionar archivo .xlsx / .csv</button>
+    <input type="file" class="file-input" id="fileInput" accept=".xlsx,.xls,.csv" onchange="handleFile(event)">
+    <div class="status">
+      <div class="dot"></div>
+      <span id="status-text">Cargando Data-ETFPESOV.xlsx...</span>
+    </div>
+  </div>
+
+ 
+  <!-- Tarjetas ETF -->
+  <div class="metric-section">
+    <div class="sec-label etf-label">ETFPESOV</div>
+    <div class="metric-row">
+      <div class="metric etf metric-hero"><div class="m-label">NAV</div><div class="m-value" id="m-nav">S/ 1.2847</div><div class="m-sub" id="m-nav-chg">▲ +0.32% hoy</div></div>
+      <div class="metric etf"><div class="m-label">Duración mod.</div><div class="m-value" id="m-dur">4.82 a</div><div class="m-sub">años</div></div>
+      <div class="metric etf"><div class="m-label">YTM</div><div class="m-value" id="m-ytm">6.74%</div><div class="m-sub">yield to maturity</div></div>
+      <div class="metric etf"><div class="m-label">Cupón</div><div class="m-value" id="m-cup">5.80%</div><div class="m-sub">promedio</div></div>
+    </div>
+  </div>
+
+  <!-- Tarjetas Benchmark -->
+  <div class="metric-section">
+    <div class="sec-label bench-label">Benchmark</div>
+    <div class="metric-row">
+      <div class="metric bench"><div class="m-label">NAV Benchmark</div><div class="m-value" id="m-navb">S/ 1.2631</div><div class="m-sub neu">último</div></div>
+      <div class="metric bench"><div class="m-label">Duración mod.</div><div class="m-value" id="m-durb">4.91 a</div><div class="m-sub neu">años</div></div>
+      <div class="metric bench"><div class="m-label">YTM</div><div class="m-value" id="m-ytmb">6.51%</div><div class="m-sub neu">yield to maturity</div></div>
+      <div class="metric bench"><div class="m-label">Cupón</div><div class="m-value" id="m-cupb">5.60%</div><div class="m-sub neu">promedio</div></div>
+    </div>
+  </div>
+
+  <!-- Cuadro comparativo de retornos -->
+  <div class="grid-full">
+    <div class="card card-primary">
+      <div class="card-header">
+        <span class="card-title">Retornos al <span id="returns-date">—</span> — ETFPESOV vs Benchmark</span>
+      </div>
+      <div class="returns-wrap">
+        <table class="returns-table" aria-label="Retornos ETFPESOV vs Benchmark">
+          <thead>
+            <tr>
+              <th>Portafolio</th>
+              <th>1 día</th>
+              <th>1 mes</th>
+              <th>3 meses</th>
+              <th>6 meses</th>
+              <th>YTD</th>
+              <th>1 año</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr>
+              <td class="returns-name">ETFPESOV</td>
+              <td id="ret-etf-1d">—</td>
+              <td id="ret-etf-1m">—</td>
+              <td id="ret-etf-3m">—</td>
+              <td id="ret-etf-6m">—</td>
+              <td id="ret-etf-ytd">—</td>
+              <td id="ret-etf-1y">—</td>
+            </tr>
+            <tr>
+              <td class="returns-name">Benchmark</td>
+              <td id="ret-bench-1d">—</td>
+              <td id="ret-bench-1m">—</td>
+              <td id="ret-bench-3m">—</td>
+              <td id="ret-bench-6m">—</td>
+              <td id="ret-bench-ytd">—</td>
+              <td id="ret-bench-1y">—</td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+  </div>
+
+  <!-- Tarjetas de tracking / ejecución -->
+  <div class="metric-section">
+    <div class="sec-label etf-label">Ejecución y tracking</div>
+    <div class="metric-row">
+      <div class="metric etf"><div class="m-label">TE 30 días</div><div class="m-value" id="m-te30">—</div><div class="m-sub">tracking error</div></div>
+      <div class="metric etf"><div class="m-label">TE 60 días</div><div class="m-value" id="m-te60">—</div><div class="m-sub">tracking error</div></div>
+      <div class="metric etf"><div class="m-label">TE 180 días</div><div class="m-value" id="m-te180">—</div><div class="m-sub">tracking error</div></div>
+      <div class="metric etf"><div class="m-label">TE 360 días</div><div class="m-value" id="m-te360">—</div><div class="m-sub">tracking error</div></div>
+    </div>
+    <div class="metric-row" style="margin-top:10px;">
+      <div class="metric etf"><div class="m-label">Slippage 30 días</div><div class="m-value" id="m-slip30">—</div><div class="m-sub">slippage</div></div>
+      <div class="metric etf"><div class="m-label">Slippage 60 días</div><div class="m-value" id="m-slip60">—</div><div class="m-sub">slippage</div></div>
+      <div class="metric etf"><div class="m-label">Slippage 180 días</div><div class="m-value" id="m-slip180">—</div><div class="m-sub">slippage</div></div>
+      <div class="metric etf"><div class="m-label">Slippage 360 días</div><div class="m-value" id="m-slip360">—</div><div class="m-sub">slippage</div></div>
+    </div>
+  </div>
+
+  <!-- Gráfico grande: retorno acumulado -->
+  <div class="grid-full">
+    <div class="card card-primary">
+      <div class="card-header"><span class="card-title">Retorno acumulado — ETFPESOV vs Benchmark</span></div>
+      <div class="legend">
+        <div class="legend-item"><div class="legend-dot" style="background:#1F4E79;"></div>ETFPESOV</div>
+        <div class="legend-item"><div class="legend-dot" style="background:#888780;border:1px dashed #888;"></div>Benchmark</div>
+      </div>
+      <div style="position:relative;width:100%;height:260px;">
+        <canvas id="acChart" role="img" aria-label="Retorno acumulado ETFPESOV vs Benchmark"></canvas>
+      </div>
+    </div>
+  </div>
+
+  <!-- Segundo gráfico grande: NAV y VWAP -->
+  <div class="grid-full">
+    <div class="card">
+      <div class="card-header"><span class="card-title">NAV vs VWAP</span></div>
+      <div class="legend">
+        <div class="legend-item"><div class="legend-dot" style="background:#1F4E79;"></div>NAV</div>
+        <div class="legend-item"><div class="legend-dot" style="background:#888780;"></div>VWAP</div>
+      </div>
+      <div style="position:relative;width:100%;height:260px;">
+        <canvas id="navVwapChart" role="img" aria-label="NAV y VWAP"></canvas>
+      </div>
+    </div>
+  </div>
+
+  <!-- Tercer gráfico grande: Dislocation -->
+  <div class="grid-full">
+    <div class="card">
+      <div class="card-header"><span class="card-title">Dislocation</span></div>
+      <div class="legend">
+        <div class="legend-item"><div class="legend-dot" style="background:#1F4E79;"></div>30 días</div>
+        <div class="legend-item"><div class="legend-dot" style="background:#888780;"></div>60 días</div>
+        <div class="legend-item"><div class="legend-dot" style="background:#BA7517;"></div>180 días</div>
+        <div class="legend-item"><div class="legend-dot" style="background:#7FA6C9;"></div>360 días</div>
+      </div>
+      <div style="position:relative;width:100%;height:260px;">
+        <canvas id="dislocationChart" role="img" aria-label="Dislocation de 30, 60, 180 y 360 días"></canvas>
+      </div>
+    </div>
+  </div>
+
+  <!-- Cuarto gráfico grande: Drawdown -->
+  <div class="grid-full">
+    <div class="card">
+      <div class="card-header"><span class="card-title">Drawdown</span></div>
+      <div class="legend">
+        <div class="legend-item"><div class="legend-dot" style="background:#1F4E79;"></div>Drawdown</div>
+        <div class="legend-item"><div class="legend-dot" style="background:#BA7517;"></div>Maximum Drawdown</div>
+      </div>
+      <div style="position:relative;width:100%;height:260px;">
+        <canvas id="drawdownChart" role="img" aria-label="Drawdown y Maximum Drawdown"></canvas>
+      </div>
+    </div>
+  </div>
+
+  <!-- Gráficos pequeños: Cupón, YTM, Duración -->
+  <div class="grid-3">
+    <div class="card">
+      <div class="card-header"><span class="card-title">Cupón</span></div>
+      <div class="legend">
+        <div class="legend-item"><div class="legend-dot" style="background:#1F4E79;"></div>ETFPESOV</div>
+        <div class="legend-item"><div class="legend-dot" style="background:#888780;"></div>Benchmark</div>
+      </div>
+      <div style="position:relative;width:100%;height:180px;">
+        <canvas id="cupChart" role="img" aria-label="Cupón ETFPESOV vs Benchmark"></canvas>
+      </div>
+    </div>
+    <div class="card">
+      <div class="card-header"><span class="card-title">Yield to maturity</span></div>
+      <div class="legend">
+        <div class="legend-item"><div class="legend-dot" style="background:#1F4E79;"></div>ETFPESOV</div>
+        <div class="legend-item"><div class="legend-dot" style="background:#888780;"></div>Benchmark</div>
+      </div>
+      <div style="position:relative;width:100%;height:180px;">
+        <canvas id="ytmChart" role="img" aria-label="YTM ETFPESOV vs Benchmark"></canvas>
+      </div>
+    </div>
+    <div class="card">
+      <div class="card-header"><span class="card-title">Duración modificada</span></div>
+      <div class="legend">
+        <div class="legend-item"><div class="legend-dot" style="background:#1F4E79;"></div>ETFPESOV</div>
+        <div class="legend-item"><div class="legend-dot" style="background:#888780;"></div>Benchmark</div>
+      </div>
+      <div style="position:relative;width:100%;height:180px;">
+        <canvas id="durChart" role="img" aria-label="Duración ETFPESOV vs Benchmark"></canvas>
+      </div>
+    </div>
+
+  </div>
+
+  <!-- Segunda fila: Patrimonio/Partícipes y Volumen/Operaciones -->
+  <div class="grid-2">
+    <div class="card">
+      <div class="card-header"><span class="card-title">Patrimonio y partícipes</span></div>
+      <div class="legend">
+        <div class="legend-item"><div class="legend-dot" style="background:#1F4E79;"></div>Patrimonio</div>
+        <div class="legend-item"><div class="legend-dot" style="background:#888780;"></div>Partícipes</div>
+      </div>
+      <div style="position:relative;width:100%;height:200px;">
+        <canvas id="patChart" role="img" aria-label="Patrimonio y partícipes de ETFPESOV"></canvas>
+      </div>
+    </div>
+    <div class="card">
+      <div class="card-header"><span class="card-title">Volumen y Operaciones</span></div>
+      <div class="legend">
+        <div class="legend-item"><div class="legend-dot" style="background:#1F4E79;"></div>Volumen</div>
+        <div class="legend-item"><div class="legend-dot" style="background:#888780;"></div>Operaciones</div>
+      </div>
+      <div style="position:relative;width:100%;height:200px;">
+        <canvas id="volOpsChart" role="img" aria-label="Volumen y Operaciones"></canvas>
+      </div>
+    </div>
+  </div>
+
+  <!-- Tracking Error — gráfico grande con las cuatro ventanas -->
+  <div class="grid-full">
+    <div class="card">
+      <div class="card-header"><span class="card-title">Tracking Error</span></div>
+      <div class="legend">
+        <div class="legend-item"><div class="legend-dot" style="background:#1F4E79;"></div>30 días</div>
+        <div class="legend-item"><div class="legend-dot" style="background:#888780;"></div>60 días</div>
+        <div class="legend-item"><div class="legend-dot" style="background:#BA7517;"></div>180 días</div>
+        <div class="legend-item"><div class="legend-dot" style="background:#7FA6C9;"></div>360 días</div>
+      </div>
+      <div style="position:relative;width:100%;height:260px;">
+        <canvas id="teChart" role="img" aria-label="Tracking Error de 30, 60, 180 y 360 días"></canvas>
+      </div>
+    </div>
+  </div>
+
+  <!-- Slippage — cuatro ventanas en 2x2 -->
+  <div class="grid-2">
+    <div class="card">
+      <div class="card-header"><span class="card-title">Slippage 30 días</span></div>
+      <div class="legend">
+        <div class="legend-item"><div class="legend-dot" style="background:#1F4E79;"></div>Slippage</div>
+        <div class="legend-item"><div class="legend-dot" style="background:#888780;"></div>Media histórica</div>
+      </div>
+      <div style="position:relative;width:100%;height:200px;">
+        <canvas id="slip30Chart" role="img" aria-label="Slippage 30 días y media histórica"></canvas>
+      </div>
+    </div>
+    <div class="card">
+      <div class="card-header"><span class="card-title">Slippage 60 días</span></div>
+      <div class="legend">
+        <div class="legend-item"><div class="legend-dot" style="background:#1F4E79;"></div>Slippage</div>
+        <div class="legend-item"><div class="legend-dot" style="background:#888780;"></div>Media histórica</div>
+      </div>
+      <div style="position:relative;width:100%;height:200px;">
+        <canvas id="slip60Chart" role="img" aria-label="Slippage 60 días y media histórica"></canvas>
+      </div>
+    </div>
+  </div>
+
+  <div class="grid-2">
+    <div class="card">
+      <div class="card-header"><span class="card-title">Slippage 180 días</span></div>
+      <div class="legend">
+        <div class="legend-item"><div class="legend-dot" style="background:#1F4E79;"></div>Slippage</div>
+        <div class="legend-item"><div class="legend-dot" style="background:#888780;"></div>Media histórica</div>
+      </div>
+      <div style="position:relative;width:100%;height:200px;">
+        <canvas id="slip180Chart" role="img" aria-label="Slippage 180 días y media histórica"></canvas>
+      </div>
+    </div>
+    <div class="card">
+      <div class="card-header"><span class="card-title">Slippage 360 días</span></div>
+      <div class="legend">
+        <div class="legend-item"><div class="legend-dot" style="background:#1F4E79;"></div>Slippage</div>
+        <div class="legend-item"><div class="legend-dot" style="background:#888780;"></div>Media histórica</div>
+      </div>
+      <div style="position:relative;width:100%;height:200px;">
+        <canvas id="slip360Chart" role="img" aria-label="Slippage 360 días y media histórica"></canvas>
+      </div>
+    </div>
+  </div>
+
+  <!-- Gráfico final: Vol Mediana -->
+  <div class="grid-full">
+    <div class="card">
+      <div class="card-header"><span class="card-title">Volumen Mediana</span></div>
+      <div class="legend">
+        <div class="legend-item"><div class="legend-dot" style="background:#1F4E79;"></div>30 días</div>
+        <div class="legend-item"><div class="legend-dot" style="background:#888780;"></div>60 días</div>
+        <div class="legend-item"><div class="legend-dot" style="background:#BA7517;"></div>180 días</div>
+        <div class="legend-item"><div class="legend-dot" style="background:#7FA6C9;"></div>360 días</div>
+      </div>
+      <div style="position:relative;width:100%;height:260px;">
+        <canvas id="volMedianChart" role="img" aria-label="Vol Mediana de 30, 60, 180 y 360 días"></canvas>
+      </div>
+    </div>
+  </div>
+
+  <div class="footer">
+    <p>ETFPESOV · Dashboard de gestión</p>
+    <p>Generado el <span id="gen-date"></span></p>
+  </div>
+
+</div>
+
+<script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.1/chart.umd.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
+<script>
+  if (typeof XLSX === 'undefined') {
+    document.write('<script src="https://cdn.jsdelivr.net/npm/xlsx@0.18.5/dist/xlsx.full.min.js"><\/script>');
+  }
+</script>
+<script>
+document.getElementById('gen-date').textContent = new Date().toLocaleDateString('es-PE', {year:'numeric',month:'long',day:'numeric'});
+
+// ── Datos de ejemplo ──────────────────────────────────────────────
+function genDates(n) {
+  const d = []; let cur = new Date('2024-01-02');
+  while (d.length < n) { const day = cur.getDay(); if (day!==0&&day!==6) d.push(cur.toISOString().slice(0,10)); cur.setDate(cur.getDate()+1); }
+  return d;
+}
+function genSeries(start, vol, n) {
+  let v = start;
+  return Array.from({length:n}, () => { v += (Math.random()-0.48)*vol; return parseFloat(v.toFixed(4)); });
+}
+
+const N = 250;
+const DATES_ALL = genDates(N);
+
+function buildSampleData() {
+  const nav   = genSeries(1.20, 0.004, N);
+  const navb  = genSeries(1.20, 0.0035, N);
+  const vwap  = nav.map(v=>parseFloat((v*(1+(Math.random()-0.5)*0.002)).toFixed(4)));
+  const dur   = genSeries(4.9, 0.05, N).map(v=>Math.max(3.5,Math.min(6.5,v)));
+  const durb  = dur.map(v=>parseFloat((v+0.1+Math.random()*0.05).toFixed(4)));
+  const ytm   = genSeries(6.8, 0.04, N).map(v=>Math.max(5,Math.min(9,v)));
+  const ytmb  = ytm.map(v=>parseFloat((v-0.2+Math.random()*0.05).toFixed(4)));
+  const cup   = genSeries(5.8, 0.02, N).map(v=>Math.max(4,Math.min(8,v)));
+  const cupb  = cup.map(v=>parseFloat((v-0.2+Math.random()*0.03).toFixed(4)));
+  const patrimonio = genSeries(15000000, 90000, N).map(v=>Math.max(0,v));
+  const participes = genSeries(1200, 12, N).map(v=>Math.max(0,Math.round(v)));
+  const volumen = genSeries(250000, 18000, N).map(v=>Math.max(0,Math.round(v)));
+  const operaciones = genSeries(120, 8, N).map(v=>Math.max(1,Math.round(v)));
+  const te30 = genSeries(0.85, 0.025, N).map(v=>Math.max(0.2,Math.min(2.0,v)));
+  const te60 = genSeries(0.75, 0.02, N).map(v=>Math.max(0.15,Math.min(1.8,v)));
+  const te180 = genSeries(0.65, 0.015, N).map(v=>Math.max(0.1,Math.min(1.5,v)));
+  const te360 = genSeries(0.60, 0.012, N).map(v=>Math.max(0.1,Math.min(1.4,v)));
+  const slip30 = genSeries(0.18, 0.012, N).map(v=>Math.max(0.01,Math.min(0.8,v)));
+  const slip60 = genSeries(0.15, 0.009, N).map(v=>Math.max(0.01,Math.min(0.7,v)));
+  const slip180 = genSeries(0.13, 0.007, N).map(v=>Math.max(0.01,Math.min(0.6,v)));
+  const slip360 = genSeries(0.12, 0.005, N).map(v=>Math.max(0.01,Math.min(0.5,v)));
+  const dis30 = genSeries(0.30, 0.02, N);
+  const dis60 = genSeries(0.25, 0.015, N);
+  const dis180 = genSeries(0.20, 0.01, N);
+  const dis360 = genSeries(0.18, 0.008, N);
+  const volmed30 = genSeries(220000, 12000, N).map(v=>Math.max(0,Math.round(v)));
+  const volmed60 = genSeries(210000, 9000, N).map(v=>Math.max(0,Math.round(v)));
+  const volmed180 = genSeries(200000, 7000, N).map(v=>Math.max(0,Math.round(v)));
+  const volmed360 = genSeries(195000, 6000, N).map(v=>Math.max(0,Math.round(v)));
+  const etf_ac  = nav.map(v=>parseFloat(((v/nav[0]-1)*100).toFixed(4)));
+  const bench_ac = navb.map(v=>parseFloat(((v/navb[0]-1)*100).toFixed(4)));
+  let peak = -Infinity;
+  const drawdown = nav.map(v => { peak = Math.max(peak, v); return parseFloat(((v/peak-1)*100).toFixed(4)); });
+  let maxDD = 0;
+  const maximumDrawdown = drawdown.map(v => { maxDD = Math.min(maxDD, v); return parseFloat(maxDD.toFixed(4)); });
+  return { DATES:DATES_ALL, nav, vwap, navb, dur, durb, ytm, ytmb, cup, cupb, patrimonio, participes, volumen, operaciones, te30, te60, te180, te360, slip30, slip60, slip180, slip360, dis30, dis60, dis180, dis360, volmed30, volmed60, volmed180, volmed360, etf_ac, bench_ac, drawdown, maximumDrawdown };
+}
+
+let DATA = buildSampleData();
+let RANGE = '1M';
+let CUSTOM_FROM = '';
+let CUSTOM_TO = '';
+let charts = {};
+
+// ── Slice por rango ───────────────────────────────────────────────
+function sliceData(d) {
+  let indices = [];
+  if (RANGE === 'CUSTOM' && CUSTOM_FROM && CUSTOM_TO) {
+    for (let i = 0; i < d.DATES.length; i++) {
+      if (d.DATES[i] >= CUSTOM_FROM && d.DATES[i] <= CUSTOM_TO) indices.push(i);
+    }
+  } else {
+    const n = RANGE==='1M'?22:RANGE==='3M'?66:RANGE==='6M'?132:RANGE==='YTD'?ytdCount(d.DATES):d.DATES.length;
+    const s = Math.max(0, d.DATES.length - n);
+    for (let i = s; i < d.DATES.length; i++) indices.push(i);
+  }
+  const keys = ['DATES','nav','vwap','navb','dur','durb','ytm','ytmb','cup','cupb','patrimonio','participes','volumen','operaciones','te30','te60','te180','te360','slip30','slip60','slip180','slip360','dis30','dis60','dis180','dis360','volmed30','volmed60','volmed180','volmed360','etf_ac','bench_ac','drawdown','maximumDrawdown'];
+  const out = {};
+  keys.forEach(k => { out[k] = Array.isArray(d[k]) ? indices.map(i => d[k][i]) : d[k]; });
+  return out;
+}
+
+function ytdCount(dates) {
+  if (!dates.length) return 0;
+  const last = dates[dates.length - 1];
+  const year = last.slice(0,4);
+  const idx = dates.findIndex(d => d.slice(0,4) === year);
+  return idx >= 0 ? dates.length - idx : 0;
+}
+
+// ── Etiquetas eje X ───────────────────────────────────────────────
+function fmtLabel(dates) {
+  if (dates.length <= 30) return dates.map(d => d.slice(5));
+  if (dates.length <= 90) return dates.map((d,i) => i%5===0 ? d.slice(5) : '');
+  if (dates.length <= 250) return dates.map((d,i) => i%10===0 ? d.slice(0,7) : '');
+  return dates.map((d,i) => i%20===0 ? d.slice(0,7) : '');
+}
+
+// ── Opciones base Chart.js ────────────────────────────────────────
+const optsBase = (cbY) => ({
+  responsive: true, maintainAspectRatio: false,
+  plugins: { legend:{display:false}, tooltip:{mode:'index',intersect:false} },
+  elements: { point:{radius:0} },
+  scales: {
+    x: { ticks:{ font:{size:10}, autoSkip:false, maxRotation:45, minRotation:45, color:'#888',
+          callback: function(val,i){ const lbl=this.getLabelForValue(i); return lbl||null; }
+        }, grid:{display:false} },
+    y: { ticks:{ font:{size:10}, color:'#888', callback: cbY||undefined }, grid:{color:'rgba(128,128,128,0.08)'} }
+  }
+});
+
+// ── Render ────────────────────────────────────────────────────────
+function destroyAll() { Object.values(charts).forEach(c=>{try{c.destroy()}catch(e){}}); charts={}; }
+
+function historicalMean(arr) {
+  const vals = (arr || [])
+    .filter(v => v !== null && v !== undefined && v !== '' && Number.isFinite(Number(v)))
+    .map(Number);
+  if (!vals.length) return null;
+  return vals.reduce((a,b) => a + b, 0) / vals.length;
+}
+
+function trailingReturnAtDate(values, dates, months, endDateKey) {
+  if (!Array.isArray(values) || !Array.isArray(dates) || !values.length || !dates.length || !endDateKey) return null;
+
+  // Última observación válida en o antes de la fecha de corte mostrada.
+  let lastIdx = -1;
+  for (let i = Math.min(values.length, dates.length) - 1; i >= 0; i--) {
+    const v = Number(values[i]);
+    if (dates[i] && dates[i] <= endDateKey && Number.isFinite(v) && v > 0) {
+      lastIdx = i;
+      break;
+    }
+  }
+
+  if (lastIdx < 0) return null;
+
+  const lastValue = Number(values[lastIdx]);
+  const actualEndDate = new Date(dates[lastIdx] + 'T00:00:00');
+  if (isNaN(actualEndDate)) return null;
+
+  // Fecha objetivo: 1, 3, 6 o 12 meses antes de la última observación válida.
+  const targetDate = new Date(actualEndDate);
+  const originalDay = targetDate.getDate();
+
+  targetDate.setDate(1);
+  targetDate.setMonth(targetDate.getMonth() - months);
+
+  // Conserva el día cuando sea posible; si no existe en ese mes,
+  // usa el último día del mes.
+  const lastDayTargetMonth = new Date(
+    targetDate.getFullYear(),
+    targetDate.getMonth() + 1,
+    0
+  ).getDate();
+
+  targetDate.setDate(Math.min(originalDay, lastDayTargetMonth));
+
+  const targetKey =
+    targetDate.getFullYear() + '-' +
+    String(targetDate.getMonth() + 1).padStart(2, '0') + '-' +
+    String(targetDate.getDate()).padStart(2, '0');
+
+  // Usa la última observación válida en o antes de la fecha objetivo.
+  let baseIdx = -1;
+  for (let i = lastIdx - 1; i >= 0; i--) {
+    const v = Number(values[i]);
+    if (dates[i] && dates[i] <= targetKey && Number.isFinite(v) && v > 0) {
+      baseIdx = i;
+      break;
+    }
+  }
+
+  if (baseIdx < 0) return null;
+
+  return (lastValue / Number(values[baseIdx]) - 1) * 100;
+}
+
+function oneDayReturnAtDate(values, dates, endDateKey) {
+  if (!Array.isArray(values) || !Array.isArray(dates) || !values.length || !dates.length || !endDateKey) return null;
+
+  let lastIdx = -1;
+  for (let i = Math.min(values.length, dates.length) - 1; i >= 0; i--) {
+    const v = Number(values[i]);
+    if (dates[i] && dates[i] <= endDateKey && Number.isFinite(v) && v > 0) {
+      lastIdx = i;
+      break;
+    }
+  }
+  if (lastIdx < 1) return null;
+
+  let baseIdx = -1;
+  for (let i = lastIdx - 1; i >= 0; i--) {
+    const v = Number(values[i]);
+    if (Number.isFinite(v) && v > 0) { baseIdx = i; break; }
+  }
+  if (baseIdx < 0) return null;
+
+  return (Number(values[lastIdx]) / Number(values[baseIdx]) - 1) * 100;
+}
+
+function ytdReturnAtDate(values, dates, endDateKey) {
+  if (!Array.isArray(values) || !Array.isArray(dates) || !values.length || !dates.length || !endDateKey) return null;
+
+  let lastIdx = -1;
+  for (let i = Math.min(values.length, dates.length) - 1; i >= 0; i--) {
+    const v = Number(values[i]);
+    if (dates[i] && dates[i] <= endDateKey && Number.isFinite(v) && v > 0) {
+      lastIdx = i;
+      break;
+    }
+  }
+  if (lastIdx < 0) return null;
+
+  const year = dates[lastIdx].slice(0, 4);
+
+  // Última observación válida del año anterior (cierre de año).
+  let baseIdx = -1;
+  for (let i = lastIdx - 1; i >= 0; i--) {
+    const v = Number(values[i]);
+    if (dates[i] && dates[i].slice(0, 4) < year && Number.isFinite(v) && v > 0) {
+      baseIdx = i;
+      break;
+    }
+  }
+
+  // Si no hay datos del año anterior, usa la primera observación válida del año en curso.
+  if (baseIdx < 0) {
+    for (let i = 0; i <= lastIdx; i++) {
+      const v = Number(values[i]);
+      if (dates[i] && dates[i].slice(0, 4) === year && Number.isFinite(v) && v > 0) {
+        baseIdx = i;
+        break;
+      }
+    }
+  }
+  if (baseIdx < 0) return null;
+
+  return (Number(values[lastIdx]) / Number(values[baseIdx]) - 1) * 100;
+}
+ 
+function setReturnCell(id, value) {
+  const el = document.getElementById(id);
+  if (!el) return;
+
+  if (value === null || !Number.isFinite(value)) {
+    el.textContent = '—';
+    el.className = '';
+    return;
+  }
+
+  el.textContent = (value > 0 ? '+' : '') + value.toFixed(2) + '%';
+  el.className = 'returns-value ' + (value > 0 ? 'pos' : value < 0 ? 'neg' : '');
+}
+
+function formatDashboardDate(dateKey) {
+  if (!dateKey) return '—';
+  const parts = dateKey.split('-');
+  if (parts.length !== 3) return dateKey;
+  return `${parts[2]}/${parts[1]}/${parts[0]}`;
+}
+
+function updateReturnsTable(endDateKey) {
+  const titleDate = document.getElementById('returns-date');
+  if (titleDate) titleDate.textContent = formatDashboardDate(endDateKey);
+
+  setReturnCell('ret-etf-1d', oneDayReturnAtDate(DATA.nav, DATA.DATES, endDateKey));
+  setReturnCell('ret-bench-1d', oneDayReturnAtDate(DATA.navb, DATA.DATES, endDateKey));
+
+  const horizons = [
+    { months: 1, etf: 'ret-etf-1m', bench: 'ret-bench-1m' },
+    { months: 3, etf: 'ret-etf-3m', bench: 'ret-bench-3m' },
+    { months: 6, etf: 'ret-etf-6m', bench: 'ret-bench-6m' },
+    { months: 12, etf: 'ret-etf-1y', bench: 'ret-bench-1y' }
+  ];
+
+  horizons.forEach(h => {
+    setReturnCell(h.etf, trailingReturnAtDate(DATA.nav, DATA.DATES, h.months, endDateKey));
+    setReturnCell(h.bench, trailingReturnAtDate(DATA.navb, DATA.DATES, h.months, endDateKey));
+  });
+
+  setReturnCell('ret-etf-ytd', ytdReturnAtDate(DATA.nav, DATA.DATES, endDateKey));
+  setReturnCell('ret-bench-ytd', ytdReturnAtDate(DATA.navb, DATA.DATES, endDateKey));
+}
+
+function renderCharts() {
+  destroyAll();
+  const d = sliceData(DATA);
+  const labels = fmtLabel(d.DATES);
+
+  // Retorno acumulado — rebase al primer punto del rango
+  const etf_ac  = d.etf_ac.map(v => parseFloat((v - d.etf_ac[0] + (DATA.etf_ac[DATA.etf_ac.length - d.etf_ac.length] || 0)*0).toFixed(4)));
+  const bench_ac = d.bench_ac.map(v => parseFloat((v - d.bench_ac[0]).toFixed(4)));
+  // Si los datos vienen directamente como acumulado desde Excel, usamos el slice directo:
+  const etf_plot   = d.etf_ac;
+  const bench_plot = d.bench_ac;
+
+  charts.ac = new Chart(document.getElementById('acChart'), {
+    type: 'line',
+    data: { labels, datasets: [
+      {label:'ETFPESOV', data:etf_plot,  borderColor:'#1F4E79', borderWidth:2,   tension:0.3, fill:false},
+      {label:'Benchmark',data:bench_plot, borderColor:'#888780', borderWidth:1.5, tension:0.3, fill:false, borderDash:[4,3]}
+    ]},
+    options: optsBase(v => v.toFixed(2)+'%')
+  });
+
+  charts.navVwap = new Chart(document.getElementById('navVwapChart'), {
+    type: 'line',
+    data: { labels, datasets: [
+      {label:'NAV', data:d.nav, borderColor:'#1F4E79', borderWidth:1.7, tension:0.25, fill:false},
+      {label:'VWAP', data:d.vwap, borderColor:'#888780', borderWidth:1.5, tension:0.25, fill:false, borderDash:[5,4]}
+    ]},
+    options: optsBase(v => 'S/ '+Number(v).toFixed(4))
+  });
+
+  charts.dislocation = new Chart(document.getElementById('dislocationChart'), {
+    type: 'line',
+    data: { labels, datasets: [
+      {label:'30 días', data:d.dis30, borderColor:'#1F4E79', borderWidth:1.7, tension:0.25, fill:false},
+      {label:'60 días', data:d.dis60, borderColor:'#888780', borderWidth:1.5, tension:0.25, fill:false, borderDash:[4,3]},
+      {label:'180 días', data:d.dis180, borderColor:'#BA7517', borderWidth:1.5, tension:0.25, fill:false},
+      {label:'360 días', data:d.dis360, borderColor:'#7FA6C9', borderWidth:1.5, tension:0.25, fill:false, borderDash:[6,3]}
+    ]},
+    options: optsBase(v => Number(v).toFixed(2) + '%')
+  });
+
+  charts.drawdown = new Chart(document.getElementById('drawdownChart'), {
+    type: 'line',
+    data: { labels, datasets: [
+      {label:'Drawdown', data:d.drawdown, borderColor:'#1F4E79', borderWidth:1.8, tension:0.2, fill:true, backgroundColor:'rgba(31,78,121,0.08)', pointRadius:0},
+      {label:'Maximum Drawdown', data:d.maximumDrawdown, borderColor:'#BA7517', borderWidth:1.6, tension:0.15, fill:false, pointRadius:0, borderDash:[5,4]}
+    ]},
+    options: optsBase(v => v.toFixed(2)+'%')
+  });
+
+  charts.cup = new Chart(document.getElementById('cupChart'), {
+    type: 'line',
+    data: { labels, datasets: [
+      {label:'ETFPESOV', data:d.cup,  borderColor:'#1F4E79', borderWidth:1.5, tension:0.3, fill:false},
+      {label:'Benchmark',data:d.cupb, borderColor:'#888780', borderWidth:1.5, tension:0.3, fill:false, borderDash:[4,3]}
+    ]},
+    options: optsBase(v => v.toFixed(2)+'%')
+  });
+
+  charts.ytm = new Chart(document.getElementById('ytmChart'), {
+    type: 'line',
+    data: { labels, datasets: [
+      {label:'ETFPESOV', data:d.ytm,  borderColor:'#1F4E79', borderWidth:1.5, tension:0.3, fill:false},
+      {label:'Benchmark',data:d.ytmb, borderColor:'#888780', borderWidth:1.5, tension:0.3, fill:false, borderDash:[4,3]}
+    ]},
+    options: optsBase(v => v.toFixed(2)+'%')
+  });
+
+  charts.dur = new Chart(document.getElementById('durChart'), {
+    type: 'line',
+    data: { labels, datasets: [
+      {label:'ETFPESOV', data:d.dur,  borderColor:'#1F4E79', borderWidth:1.5, tension:0.3, fill:false},
+      {label:'Benchmark',data:d.durb, borderColor:'#888780', borderWidth:1.5, tension:0.3, fill:false, borderDash:[4,3]}
+    ]},
+    options: optsBase(v => v.toFixed(2)+'a')
+  });
+
+  charts.volOps = new Chart(document.getElementById('volOpsChart'), {
+    type: 'line',
+    data: { labels, datasets: [
+      {label:'Volumen', data:d.volumen, borderColor:'#1F4E79', borderWidth:1.5, tension:0.3, fill:false},
+      {label:'Operaciones', data:d.operaciones, borderColor:'#888780', borderWidth:1.5, tension:0.3, fill:false, borderDash:[4,3], yAxisID:'yOps'}
+    ]},
+    options: {
+      responsive:true, maintainAspectRatio:false,
+      plugins:{legend:{display:true,position:'top',labels:{boxWidth:10,font:{size:10}}},tooltip:{mode:'index',intersect:false}},
+      elements:{point:{radius:0}},
+      scales:{
+        x:{ticks:{font:{size:10},autoSkip:false,maxRotation:45,minRotation:45,color:'#888',callback:function(val,i){const lbl=this.getLabelForValue(i);return lbl||null;}},grid:{display:false}},
+        y:{ticks:{font:{size:10},color:'#888',callback:v=>Number(v).toLocaleString('es-PE')},grid:{color:'rgba(128,128,128,0.08)'}},
+        yOps:{position:'right',grid:{drawOnChartArea:false},ticks:{font:{size:10},color:'#888',callback:v=>Number(v).toLocaleString('es-PE')}}
+      }
+    }
+  });
+
+  // Patrimonio y partícipes — dos ejes Y porque las escalas son diferentes
+  charts.pat = new Chart(document.getElementById('patChart'), {
+    type: 'line',
+    data: { labels, datasets: [
+      {label:'Patrimonio', data:d.patrimonio, borderColor:'#1F4E79', borderWidth:1.5, tension:0.3, fill:false, yAxisID:'yPat'},
+      {label:'Partícipes', data:d.participes, borderColor:'#888780', borderWidth:1.5, tension:0.3, fill:false, borderDash:[4,3], yAxisID:'yPart'}
+    ]},
+    options: {
+      responsive:true, maintainAspectRatio:false,
+      plugins:{legend:{display:false}, tooltip:{mode:'index',intersect:false}},
+      elements:{point:{radius:0}},
+      scales:{
+        x:{ticks:{font:{size:10},autoSkip:false,maxRotation:45,minRotation:45,color:'#888',callback:function(val,i){const lbl=this.getLabelForValue(i);return lbl||null;}},grid:{display:false}},
+        yPat:{position:'left',ticks:{font:{size:10},color:'#888',callback:v=>'S/ '+(v/1000000).toFixed(1)+' M'},grid:{color:'rgba(128,128,128,0.08)'}},
+        yPart:{position:'right',ticks:{font:{size:10},color:'#888',callback:v=>Math.round(v)},grid:{display:false}}
+      }
+    }
+  });
+
+  // Tracking Error — 30, 60, 180 y 360 días
+  charts.te = new Chart(document.getElementById('teChart'), {
+    type: 'line',
+    data: { labels, datasets: [
+      {label:'30 días', data:d.te30, borderColor:'#1F4E79', borderWidth:1.7, tension:0.3, fill:false},
+      {label:'60 días', data:d.te60, borderColor:'#888780', borderWidth:1.5, tension:0.3, fill:false, borderDash:[4,3]},
+      {label:'180 días', data:d.te180, borderColor:'#BA7517', borderWidth:1.5, tension:0.3, fill:false},
+      {label:'360 días', data:d.te360, borderColor:'#7FA6C9', borderWidth:1.5, tension:0.3, fill:false, borderDash:[6,3]}
+    ]},
+    options: optsBase(v => v.toFixed(2)+'%')
+  });
+
+  // Slippage — una tarjeta por ventana, cada una con su media histórica
+  [
+    {key:'slip30',  canvas:'slip30Chart'},
+    {key:'slip60',  canvas:'slip60Chart'},
+    {key:'slip180', canvas:'slip180Chart'},
+    {key:'slip360', canvas:'slip360Chart'}
+  ].forEach(s => {
+    const mean = historicalMean(DATA[s.key]);
+    charts[s.key] = new Chart(document.getElementById(s.canvas), {
+      type: 'line',
+      data: { labels, datasets: [
+        {label:'Slippage', data:d[s.key], borderColor:'#1F4E79', borderWidth:1.5, tension:0.3, fill:false},
+        {label:'Media histórica', data:Array(d.DATES.length).fill(mean), borderColor:'#888780', borderWidth:1.2, borderDash:[5,4], pointRadius:0, tension:0, fill:false}
+      ]},
+      options: optsBase(v => v.toFixed(2)+'%')
+    });
+  });
+
+  charts.volMedian = new Chart(document.getElementById('volMedianChart'), {
+    type: 'line',
+    data: { labels, datasets: [
+      {label:'30 días', data:d.volmed30, borderColor:'#1F4E79', borderWidth:1.6, tension:0.3, fill:false},
+      {label:'60 días', data:d.volmed60, borderColor:'#888780', borderWidth:1.5, tension:0.3, fill:false, borderDash:[4,3]},
+      {label:'180 días', data:d.volmed180, borderColor:'#BA7517', borderWidth:1.5, tension:0.3, fill:false},
+      {label:'360 días', data:d.volmed360, borderColor:'#7FA6C9', borderWidth:1.5, tension:0.3, fill:false, borderDash:[6,3]}
+    ]},
+    options: optsBase(v => Number(v).toLocaleString('es-PE'))
+  });
+
+  updateKPIs(d);
+
+  const visibleEndDate =
+    d.DATES && d.DATES.length
+      ? d.DATES[d.DATES.length - 1]
+      : null;
+
+  updateReturnsTable(visibleEndDate);
+}
+
+function updateKPIs(d) {
+  const last = i => d[i][d[i].length-1];
+  const nav_last = last('nav');
+  const nav_prev = d.nav[d.nav.length-2] || nav_last;
+  const nav_chg  = (nav_last/nav_prev - 1)*100;
+
+  document.getElementById('m-nav').textContent   = 'S/ '+nav_last.toFixed(4);
+  const chgEl = document.getElementById('m-nav-chg');
+  chgEl.textContent = (nav_chg>=0?'▲ +':'▼ ')+nav_chg.toFixed(2)+'% hoy';
+  chgEl.className   = 'm-sub '+(nav_chg>=0?'pos':'neg');
+
+  document.getElementById('m-dur').textContent   = last('dur').toFixed(2)+' a';
+  document.getElementById('m-ytm').textContent   = last('ytm').toFixed(2)+'%';
+  document.getElementById('m-cup').textContent   = last('cup').toFixed(2)+'%';
+
+  const navbLast = [...d.navb].reverse().find(v => v !== null && Number.isFinite(v));
+  document.getElementById('m-navb').textContent  = navbLast != null ? 'S/ '+navbLast.toFixed(4) : '—';
+  document.getElementById('m-durb').textContent  = last('durb').toFixed(2)+' a';
+  document.getElementById('m-ytmb').textContent  = last('ytmb').toFixed(2)+'%';
+  document.getElementById('m-cupb').textContent  = last('cupb').toFixed(2)+'%';
+
+  const lastValid = key => {
+    const arr = d[key] || [];
+    for (let i = arr.length - 1; i >= 0; i--) {
+      const v = arr[i];
+      if (v !== null && v !== undefined && v !== '' && Number.isFinite(Number(v))) return Number(v);
+    }
+    return null;
+  };
+  const fmtPct = v => v === null ? '—' : v.toFixed(2)+'%';
+  document.getElementById('m-te30').textContent = fmtPct(lastValid('te30'));
+  document.getElementById('m-te60').textContent = fmtPct(lastValid('te60'));
+  document.getElementById('m-te180').textContent = fmtPct(lastValid('te180'));
+  document.getElementById('m-te360').textContent = fmtPct(lastValid('te360'));
+  document.getElementById('m-slip30').textContent = fmtPct(lastValid('slip30'));
+  document.getElementById('m-slip60').textContent = fmtPct(lastValid('slip60'));
+  document.getElementById('m-slip180').textContent = fmtPct(lastValid('slip180'));
+  document.getElementById('m-slip360').textContent = fmtPct(lastValid('slip360'));
+}
+
+function setRange(btn, r) {
+  document.querySelectorAll('.range-btn').forEach(b => b.classList.remove('active'));
+  btn.classList.add('active');
+  RANGE = r;
+  CUSTOM_FROM = '';
+  CUSTOM_TO = '';
+  renderCharts();
+}
+
+function applyCustomRange() {
+  const from = document.getElementById('dateFrom').value;
+  const to = document.getElementById('dateTo').value;
+  if (!from || !to) { alert('Selecciona una fecha de inicio y una fecha de fin.'); return; }
+  if (from > to) { alert('La fecha Desde no puede ser posterior a la fecha Hasta.'); return; }
+  const available = DATA.DATES || [];
+  const hasFrom = available.some(d => d >= from && d <= to);
+  if (!hasFrom) { alert('No hay datos disponibles dentro del rango seleccionado.'); return; }
+  CUSTOM_FROM = from;
+  CUSTOM_TO = to;
+  RANGE = 'CUSTOM';
+  document.querySelectorAll('.range-btn').forEach(b => b.classList.remove('active'));
+  renderCharts();
+}
+
+function syncDateControls() {
+  const from = document.getElementById('dateFrom');
+  const to = document.getElementById('dateTo');
+  if (!from || !to || !DATA.DATES.length) return;
+  const min = DATA.DATES[0], max = DATA.DATES[DATA.DATES.length-1];
+  from.min = min; from.max = max;
+  to.min = min; to.max = max;
+  if (!from.value || from.value < min || from.value > max) from.value = min;
+  if (!to.value || to.value < min || to.value > max) to.value = max;
+}
+
+// ── Parser Excel / CSV ────────────────────────────────────────────
+function excelDateToStr(serial) {
+  const date = new Date((serial - 25569) * 86400 * 1000);
+  return date.toISOString().slice(0, 10);
+}
+
+function handleFile(evt) {
+  const file = evt.target.files[0];
+  if (!file) return;
+  document.getElementById('status-text').textContent = 'Procesando '+file.name+'...';
+  const reader = new FileReader();
+  reader.onload = function(e) {
+    try {
+      let rows;
+      if (/\.csv$/i.test(file.name)) {
+        rows = e.target.result.split('\n').map(r => r.split(','));
+      } else {
+        const wb = XLSX.read(e.target.result, {type:'array'});
+        const ws = wb.Sheets[wb.SheetNames[0]];
+        rows = XLSX.utils.sheet_to_json(ws, {header:1});
+      }
+
+      // Normaliza encabezados para tolerar acentos, espacios, saltos de línea y símbolos de Excel.
+      const norm = v => String(v ?? '')
+        .normalize('NFD').replace(/[\u0300-\u036f]/g,'')
+        .toLowerCase().replace(/[^a-z0-9]+/g,'');
+      let headerRow = 0;
+      let header = (rows[0] || []).map(norm);
+      // Busca la fila real de encabezados en las primeras filas del Excel.
+      // Esto permite trabajar aunque exista un título o una fila vacía antes de las columnas.
+      const headerScore = h => ['fecha','nav','patrimonio','participes','volumen','operaciones','te30dias','te60dias','te180dias','slippage30dias','slippage60dias','dislocation30dias','dislocation60dias','dislocation180dias','volmediana30dias','volmediana60dias','volmediana180dias']
+        .reduce((score, k) => score + (h.some(x => x === k || x.includes(k) || k.includes(x)) ? 1 : 0), 0);
+      let bestScore = headerScore(header);
+      for (let rr = 1; rr < Math.min(rows.length, 15); rr++) {
+        const candidate = (rows[rr] || []).map(norm);
+        const score = headerScore(candidate);
+        if (score > bestScore) { bestScore = score; headerRow = rr; header = candidate; }
+      }
+      const col = (...names) => {
+        const wanted = names.map(norm);
+        // 1) Primero exige coincidencia exacta. Esto es importante para no
+        // confundir YTM con YTM_Benchmark ni Cupón con Cupón_Benchmark.
+        for (const n of wanted) {
+          const i = header.indexOf(n);
+          if (i >= 0) return i;
+        }
+        // 2) Si no hay coincidencia exacta, permite coincidencias parciales.
+        for (const n of wanted) {
+          const i = header.findIndex(h => h.includes(n) || n.includes(h));
+          if (i >= 0) return i;
+        }
+        return -1;
+      };
+      // Conversión numérica robusta: acepta números, porcentajes y formatos con coma decimal.
+      const num = v => {
+        if (typeof v === 'number') return Number.isFinite(v) ? v : 0;
+        let x = String(v ?? '').trim().replace(/%/g,'').replace(/\s/g,'');
+        if (!x) return null;
+        if (x.includes(',') && x.includes('.')) {
+          x = x.lastIndexOf(',') > x.lastIndexOf('.') ? x.replace(/\./g,'').replace(',','.') : x.replace(/,/g,'');
+        } else if (x.includes(',')) {
+          const parts = x.split(',');
+          x = parts.length === 2 && parts[1].length <= 4 ? parts[0]+'.'+parts[1] : parts.join('');
+        }
+        const parsed = parseFloat(x); return Number.isFinite(parsed) ? parsed : null;
+      };
+
+      const iDate   = col('fecha','date');
+      const iNav    = col('nav');
+      const iVwap   = col('vwap','vwap price');
+      const iNavb   = col('nav_benchmark','nav benchmark','nav_bench','nav bench','benchmark_nav','benchmark nav');
+      const iDur    = col('duración','duracion','duration');
+      const iDurb   = col('dur_bench','dur bench','duracion bench');
+      const iYtm    = col('ytm','yield','ytm_etfpesov','ytm etfpesov');
+      const iYtmb   = col('ytm_benchmark','ytm benchmark','ytm_bench','ytm bench','yield benchmark','yield bench');
+      const iCup    = col('cupon','cupón','coupon','cupon_etfpesov','cupon etfpesov');
+      const iCupb   = col('cupon_benchmark','cupón_benchmark','coupon benchmark','cupon_bench','cupón_bench','coupon bench');
+      const iVol     = col('volumen','volume');
+      const iOps     = col('operaciones','operations');
+      const iPatrimonio = col('patrimonio','assets','aum');
+      const iParticipes = col('participes','partícipes','participants');
+      const iEtfAc  = col('etfpesov_ac','etf_ac','etfpesov ac');
+      const iBenchAc= col('benchmark_ac','bench_ac','benchmark ac');
+      const iDrawdown = col('drawdown');
+      const iMaxDrawdown = col('maximum drawdown','maximumdrawdown','max drawdown','maxdrawdown');
+      const iTe30   = col('te 30 días','te 30 dias','te30','te30d','te30dias','tracking error 30','trackingerror30','trackingerror30dias');
+      const iTe60   = col('te 60 días','te 60 dias','te60','te60d','te60dias','tracking error 60','trackingerror60','trackingerror60dias');
+      const iTe180  = col('te 180 días','te 180 dias','te180','te180d','te180dias','tracking error 180','trackingerror180','trackingerror180dias');
+      const iTe360  = col('te 360 días','te 360 dias','te360','te360d','te360dias','tracking error 360','trackingerror360','trackingerror360dias');
+      const iSlip30 = col('slippage 30 días','slippage 30 dias','slippage30','slippage30d','slippage30dias','slipapge 30 días','slipapge 30 dias','slipapge30','slipapge30d');
+      const iSlip60 = col('slippage 60 días','slippage 60 dias','slippage60','slippage60d','slippage60dias','slipapge 60 días','slipapge 60 dias','slipapge60','slipapge60d');
+      const iSlip180 = col('slippage 180 días','slippage 180 dias','slippage180','slippage180d','slippage180dias','slipapge 180 días','slipapge 180 dias','slipapge180','slipapge180d');
+      const iSlip360 = col('slippage 360 días','slippage 360 dias','slippage360','slippage360d','slippage360dias','slipapge 360 días','slipapge 360 dias','slipapge360','slipapge360d');
+      const iDis30 = col('dislocation 30 días','dislocation 30 dias','dislocation30','dislocation30d','dislocation30dias');
+      const iDis60 = col('dislocation 60 días','dislocation 60 dias','dislocation60','dislocation60d','dislocation60dias');
+      const iDis180 = col('dislocation 180 días','dislocation 180 dias','dislocation180','dislocation180d','dislocation180dias');
+      const iDis360 = col('dislocation 360 días','dislocation 360 dias','dislocation360','dislocation360d','dislocation360dias');
+      const iVolMed30 = col('vol mediana 30 días','vol mediana 30 dias','volmediana30','volmediana30d','volmediana30dias');
+      const iVolMed60 = col('vol mediana 60 días','vol mediana 60 dias','volmediana60','volmediana60d','volmediana60dias');
+      const iVolMed180 = col('vol mediana 180 días','vol mediana 180 dias','volmediana180','volmediana180d','volmediana180dias');
+      const iVolMed360 = col('vol mediana 360 días','vol mediana 360 dias','volmediana360','volmediana360d','volmediana360dias');
+
+      const data = rows.slice(headerRow + 1).filter(r => r[iDate] !== undefined && r[iDate] !== '' && r[iNav] !== undefined && r[iNav] !== '');
+      const DATES=[],nav=[],vwap=[],navb=[],dur=[],durb=[],ytm=[],ytmb=[],cup=[],cupb=[],patrimonio=[],participes=[],volumen=[],operaciones=[],te30=[],te60=[],te180=[],te360=[],slip30=[],slip60=[],slip180=[],slip360=[],dis30=[],dis60=[],dis180=[],dis360=[],volmed30=[],volmed60=[],volmed180=[],volmed360=[],etf_ac=[],bench_ac=[],drawdown=[],maximumDrawdown=[];
+
+      data.forEach(r => {
+        const rawDate = r[iDate];
+        const parsed  = typeof rawDate === 'number' ? excelDateToStr(rawDate) : String(rawDate).slice(0,10);
+        DATES.push(parsed);
+        nav.push(parseFloat(r[iNav])||0);
+        vwap.push(iVwap>=0 ? num(r[iVwap]) : null);
+        navb.push(iNavb>=0 ? num(r[iNavb]) : null);
+        dur.push(iDur>=0  ? (parseFloat(r[iDur])||4.5)  : 4.5);
+        durb.push(iDurb>=0 ? (parseFloat(r[iDurb])||dur[dur.length-1]) : dur[dur.length-1]);
+        ytm.push(iYtm>=0  ? num(r[iYtm]) : 6.5);
+        ytmb.push(iYtmb>=0 ? num(r[iYtmb]) : ytm[ytm.length-1]);
+        cup.push(iCup>=0  ? num(r[iCup]) : 5.5);
+        cupb.push(iCupb>=0 ? num(r[iCupb]) : cup[cup.length-1]);
+        patrimonio.push(iPatrimonio>=0 ? (num(r[iPatrimonio])) : 0);
+        participes.push(iParticipes>=0 ? (num(r[iParticipes])) : 0);
+        volumen.push(iVol>=0 ? (num(r[iVol])) : 0);
+        operaciones.push(iOps>=0 ? (num(r[iOps])) : 0);
+        te30.push(iTe30>=0 ? (num(r[iTe30])) : 0);
+        te60.push(iTe60>=0 ? (num(r[iTe60])) : 0);
+        te180.push(iTe180>=0 ? (num(r[iTe180])) : 0);
+        te360.push(iTe360>=0 ? (num(r[iTe360])) : 0);
+        slip30.push(iSlip30>=0 ? (num(r[iSlip30])) : 0);
+        slip60.push(iSlip60>=0 ? (num(r[iSlip60])) : 0);
+        slip180.push(iSlip180>=0 ? (num(r[iSlip180])) : 0);
+        slip360.push(iSlip360>=0 ? (num(r[iSlip360])) : 0);
+        const dis30Val = iDis30 >= 0 ? num(r[iDis30]) : null;
+        const dis60Val = iDis60 >= 0 ? num(r[iDis60]) : null;
+        const dis180Val = iDis180 >= 0 ? num(r[iDis180]) : null;
+        const dis360Val = iDis360 >= 0 ? num(r[iDis360]) : null;
+        dis30.push(dis30Val !== null ? dis30Val * 100 : null);
+        dis60.push(dis60Val !== null ? dis60Val * 100 : null);
+        dis180.push(dis180Val !== null ? dis180Val * 100 : null);
+        dis360.push(dis360Val !== null ? dis360Val * 100 : null);
+        volmed30.push(iVolMed30>=0 ? num(r[iVolMed30]) : null);
+        volmed60.push(iVolMed60>=0 ? num(r[iVolMed60]) : null);
+        volmed180.push(iVolMed180>=0 ? num(r[iVolMed180]) : null);
+        volmed360.push(iVolMed360>=0 ? num(r[iVolMed360]) : null);
+        // Retorno acumulado: usa columna si existe, sino calcula desde NAV
+        etf_ac.push(iEtfAc>=0   ? parseFloat(r[iEtfAc])||0   : parseFloat(((nav[nav.length-1]/nav[0]-1)*100).toFixed(4)));
+        bench_ac.push(iBenchAc>=0 ? parseFloat(r[iBenchAc])||0 : parseFloat(((navb[navb.length-1]/navb[0]-1)*100).toFixed(4)));
+        drawdown.push(iDrawdown>=0 ? num(r[iDrawdown]) : null);
+        maximumDrawdown.push(iMaxDrawdown>=0 ? num(r[iMaxDrawdown]) : null);
+      });
+
+      // Si las columnas de Drawdown no existen, se calculan a partir del NAV.
+      if (iDrawdown < 0 || iMaxDrawdown < 0) {
+        let peak = -Infinity, maxDD = 0;
+        for (let j=0; j<nav.length; j++) {
+          peak = Math.max(peak, nav[j]);
+          const dd = peak > 0 ? (nav[j]/peak-1)*100 : null;
+          if (iDrawdown < 0) drawdown[j] = Number.isFinite(dd) ? dd : null;
+          if (Number.isFinite(dd)) maxDD = Math.min(maxDD, dd);
+          if (iMaxDrawdown < 0) maximumDrawdown[j] = Number.isFinite(maxDD) ? maxDD : null;
+        }
+      }
+
+      DATA = {DATES, nav, vwap, navb, dur, durb, ytm, ytmb, cup, cupb, patrimonio, participes, volumen, operaciones, te30, te60, te180, te360, slip30, slip60, slip180, slip360, dis30, dis60, dis180, dis360, volmed30, volmed60, volmed180, volmed360, etf_ac, bench_ac, drawdown, maximumDrawdown};
+      document.getElementById('status-text').textContent = '✓ '+file.name+' — '+data.length+' días cargados | YTM: '+(iYtm>=0?'ETFPESOV ✓':'—')+'/'+(iYtmb>=0?'Benchmark ✓':'—')+' | Cupón: '+(iCup>=0?'ETFPESOV ✓':'—')+'/'+(iCupb>=0?'Benchmark ✓':'—')+' | NAV/VWAP: '+(iNav>=0?'✓':'—')+'/'+(iVwap>=0?'✓':'—')+' | TE: '+(iTe30>=0?'✓':'—')+'/'+(iTe60>=0?'✓':'—')+'/'+(iTe180>=0?'✓':'—')+'/'+(iTe360>=0?'✓':'—')+' | Slippage: '+(iSlip30>=0?'✓':'—')+'/'+(iSlip60>=0?'✓':'—')+'/'+(iSlip180>=0?'✓':'—')+'/'+(iSlip360>=0?'✓':'—')+' | Drawdown: '+(iDrawdown>=0?'✓':'—')+'/'+(iMaxDrawdown>=0?'✓':'—')+' | Dislocation: '+(iDis30>=0?'✓':'—')+'/'+(iDis60>=0?'✓':'—')+'/'+(iDis180>=0?'✓':'—')+'/'+(iDis360>=0?'✓':'—')+' | Vol Mediana: '+(iVolMed30>=0?'✓':'—')+'/'+(iVolMed60>=0?'✓':'—')+'/'+(iVolMed180>=0?'✓':'—')+'/'+(iVolMed360>=0?'✓':'—');
+      document.getElementById('nav-date').textContent = DATES[0]+' – '+DATES[DATES.length-1];
+      syncDateControls();
+      renderCharts();
+    } catch(err) {
+      document.getElementById('status-text').textContent = 'Error: '+err.message;
+    }
+  };
+  if (/\.csv$/i.test(file.name)) reader.readAsText(file);
+  else {
+    if (typeof XLSX === 'undefined') throw new Error('No se pudo cargar el lector de Excel. Verifica tu conexión a internet y vuelve a intentarlo.');
+    reader.readAsArrayBuffer(file);
+  }
+}
+
+
+// ── Cargar Excel automáticamente desde GitHub Pages ────────────────
+async function loadDefaultExcel() {
+  try {
+    document.getElementById('status-text').textContent =
+      'Cargando Data-ETFPESOV.xlsx...';
+
+    const response = await fetch(
+      './Data-ETFPESOV.xlsx?v=' + Date.now(),
+      { cache: 'no-store' }
+    );
+
+    if (!response.ok) {
+      throw new Error(
+        'No se pudo encontrar Data-ETFPESOV.xlsx. HTTP ' + response.status
+      );
+    }
+
+    const blob = await response.blob();
+
+    const file = new File(
+      [blob],
+      'Data-ETFPESOV.xlsx',
+      {
+        type: 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet'
+      }
+    );
+
+    // Reutiliza toda la lógica de lectura y renderizado ya existente.
+    handleFile({
+      target: {
+        files: [file]
+      }
+    });
+
+  } catch (err) {
+    console.error('Error cargando Data-ETFPESOV.xlsx:', err);
+    document.getElementById('status-text').textContent =
+      'Error al cargar Data-ETFPESOV.xlsx: ' + err.message;
+  }
+}
+
+const dz = document.getElementById('dropzone');
+dz.addEventListener('dragover', e => { e.preventDefault(); dz.style.background='var(--surface2)'; });
+dz.addEventListener('dragleave', () => { dz.style.background=''; });
+dz.addEventListener('drop', e => {
+  e.preventDefault(); dz.style.background='';
+  const f = e.dataTransfer.files[0];
+  if (f) { const dt = new DataTransfer(); dt.items.add(f); document.getElementById('fileInput').files = dt.files; handleFile({target:{files:dt.files}}); }
+});
+
+syncDateControls();
+renderCharts();
+
+// Cargar automáticamente el Excel publicado junto con este index.html
+loadDefaultExcel();
+</script>
+</body>
+</html>
