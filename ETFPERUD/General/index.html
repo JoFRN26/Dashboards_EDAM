@@ -1009,15 +1009,23 @@ function applyCustomRange() {
   renderCharts();
 }
 
-function syncDateControls() {
+function syncDateControls(reset) {
   const from = document.getElementById('dateFrom');
   const to = document.getElementById('dateTo');
-  if (!from || !to || !DATA.DATES.length) return;
-  const min = DATA.DATES[0], max = DATA.DATES[DATA.DATES.length-1];
+  if (!from || !to || !DATA.DATES || !DATA.DATES.length) return;
+
+  // No asume que el Excel viene ordenado.
+  const valid = DATA.DATES.filter(d => /^\d{4}-\d{2}-\d{2}$/.test(d));
+  if (!valid.length) return;
+
+  const min = valid.reduce((a,b) => a < b ? a : b);
+  const max = valid.reduce((a,b) => a > b ? a : b);
+
   from.min = min; from.max = max;
   to.min = min; to.max = max;
-  if (!from.value || from.value < min || from.value > max) from.value = min;
-  if (!to.value || to.value < min || to.value > max) to.value = max;
+
+  if (reset || !from.value || from.value < min || from.value > max) from.value = min;
+  if (reset || !to.value || to.value < min || to.value > max) to.value = max;
 }
 
 // ── Parser Excel / CSV ────────────────────────────────────────────
@@ -1185,7 +1193,7 @@ function handleFile(evt) {
       DATA = {DATES, nav, navdiv, vwap, navb, dy, dyb, tc, tcb, volat, volatb, patrimonio, participes, volumen, operaciones, te30, te60, te180, te360, slip30, slip60, slip180, slip360, dis30, dis60, dis180, dis360, volmed30, volmed60, volmed180, volmed360, etf_ac, bench_ac, drawdown, maximumDrawdown};
       document.getElementById('status-text').textContent = '✓ '+file.name+' — '+data.length+' días cargados | NAV/NAV DIV/VWAP: '+(iNav>=0?'✓':'—')+'/'+(iNavDiv>=0?'✓':'—')+'/'+(iVwap>=0?'✓':'—')+' | DY: '+(iDy>=0?'ETF ✓':'—')+'/'+(iDyb>=0?'Index ✓':'—')+' | TC: '+(iTc>=0?'BCRP ✓':'—')+'/'+(iTcb>=0?'Refinitiv ✓':'—')+' | Volatilidad: '+(iVolat>=0?'ETF ✓':'—')+'/'+(iVolatb>=0?'Benchmark ✓':'—')+' | TE: '+(iTe30>=0?'✓':'—')+'/'+(iTe60>=0?'✓':'—')+'/'+(iTe180>=0?'✓':'—')+'/'+(iTe360>=0?'✓':'—')+' | Slippage: '+(iSlip30>=0?'✓':'—')+'/'+(iSlip60>=0?'✓':'—')+'/'+(iSlip180>=0?'✓':'—')+'/'+(iSlip360>=0?'✓':'—')+' | Drawdown: '+(iDrawdown>=0?'✓':'—')+'/'+(iMaxDrawdown>=0?'✓':'—')+' | Dislocation: '+(iDis30>=0?'✓':'—')+'/'+(iDis60>=0?'✓':'—')+'/'+(iDis180>=0?'✓':'—')+'/'+(iDis360>=0?'✓':'—')+' | Vol Mediana: '+(iVolMed30>=0?'✓':'—')+'/'+(iVolMed60>=0?'✓':'—')+'/'+(iVolMed180>=0?'✓':'—')+'/'+(iVolMed360>=0?'✓':'—');
       document.getElementById('nav-date').textContent = DATES[0]+' – '+DATES[DATES.length-1];
-      syncDateControls();
+      syncDateControls(true);
       renderCharts();
     } catch(err) {
       document.getElementById('status-text').textContent = 'Error: '+err.message;
