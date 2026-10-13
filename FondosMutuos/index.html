@@ -41,6 +41,10 @@
     --mp-bg: #faeeda;
     --mp-text: #633806;
 
+    --ref: #5F5E5A;
+    --ref-bg: #e9e8e4;
+    --ref-text: #3b3a37;
+
     --green: #0F6E56;
     --red: #A32D2D;
     --amber: #BA7517;
@@ -70,6 +74,10 @@
         --mp: #EF9F27;
         --mp-bg: #3d2408;
         --mp-text: #fac775;
+
+        --ref: #b4b2a9;
+        --ref-bg: #3a3a37;
+        --ref-text: #d3d1c7;
 
         --green: #1D9E75;
         --red: #E24B4A;
@@ -252,6 +260,7 @@ th:focus-visible {
 
 .dot.cp { background: var(--primary); }
 .dot.mp { background: var(--mp); }
+.dot.etf { background: var(--ref); border-radius: 2px; transform: rotate(45deg); width: 9px; height: 9px; }
 
 .cards {
     display: grid;
@@ -288,9 +297,11 @@ th:focus-visible {
 
 .card.card-hero.cp { background: var(--primary-bg); }
 .card.card-hero.mp { background: var(--mp-bg); }
+.card.card-hero.etf { background: var(--ref-bg); }
 
 .card.card-hero.cp .card-label { font-size: 12.5px; font-weight: 600; color: var(--primary-text); }
 .card.card-hero.mp .card-label { font-size: 12.5px; font-weight: 600; color: var(--mp-text); }
+.card.card-hero.etf .card-label { font-size: 12.5px; font-weight: 600; color: var(--ref-text); }
 
 .card.card-hero .card-value {
     font-size: 30px;
@@ -451,6 +462,10 @@ tbody tr[data-id] {
 
 .tag.cp { background: var(--primary-bg); color: var(--primary-text); }
 .tag.mp { background: var(--mp-bg); color: var(--mp-text); }
+.tag.etf { background: var(--ref-bg); color: var(--ref-text); }
+
+tbody tr.ref td { background: var(--surface2); border-bottom: 1.5px solid var(--border-md); }
+tbody tr.ref:hover td { background: var(--surface2); }
 
 td.name {
     max-width: 320px;
@@ -677,6 +692,51 @@ td.name {
         </div>
 
 
+        <!-- ETF DE REFERENCIA (solo si está en el Excel) -->
+
+        <div id="etfBlock" style="display:none;">
+
+            <div class="group-title">
+                <span class="dot etf"></span>
+                <span id="etfName">ETF</span>
+                <small>referencia · retorno por NAV · no entra en los promedios ni en los totales de patrimonio y partícipes</small>
+            </div>
+
+            <div class="cards">
+
+                <div class="card card-hero etf">
+                    <div class="card-label">Retorno NAV, 1 mes</div>
+                    <div id="k-ETF-r1m" class="card-value">—</div>
+                    <div class="card-note">valor cuota del ETF</div>
+                </div>
+
+                <div class="card">
+                    <div class="card-label">3 meses</div>
+                    <div id="k-ETF-r3m" class="card-value">—</div>
+                </div>
+
+                <div class="card">
+                    <div class="card-label">En el año</div>
+                    <div id="k-ETF-rytd" class="card-value">—</div>
+                </div>
+
+                <div class="card">
+                    <div class="card-label">Vs. corto plazo, en el año</div>
+                    <div id="k-ETF-vsCP" class="card-value">—</div>
+                    <div class="card-note" id="k-ETF-vsCP1m">—</div>
+                </div>
+
+                <div class="card">
+                    <div class="card-label">Vs. mediano plazo, en el año</div>
+                    <div id="k-ETF-vsMP" class="card-value">—</div>
+                    <div class="card-note" id="k-ETF-vsMP1m">—</div>
+                </div>
+
+            </div>
+
+        </div>
+
+
         <!-- ÍNDICE PONDERADO -->
 
         <div class="panel panel-primary">
@@ -684,7 +744,7 @@ td.name {
             <div class="panel-head">
 
                 <div class="panel-title">
-                    Índice ponderado por patrimonio — Corto vs mediano plazo
+                    Índice ponderado por patrimonio — Corto vs mediano plazo (y ETF de referencia)
                 </div>
 
                 <div class="control-bar">
@@ -862,6 +922,8 @@ td.name {
 
             <p><strong>Índice y periodos.</strong> Los retornos de cada periodo se encadenan en un índice base 100. Un retorno de 1 mes, 3 meses o en el año es el cambio del índice entre los cierres correspondientes, por lo que los pesos se actualizan en cada cierre.</p>
 
+            <p><strong>ETF de referencia.</strong> Si el Excel incluye un fondo con horizonte <strong>ETF</strong>, su retorno se calcula con su valor cuota (NAV) y se muestra al lado de los grupos para comparar. Su patrimonio y sus partícipes aparecen solo en su fila de la tabla de fondos: no entran en los promedios ponderados ni en los totales de corto y mediano plazo. Solo se comparan los cierres que coinciden con los de los fondos mutuos.</p>
+
             <p><strong>Cierres faltantes.</strong> Donde falta el cierre de comparación, el periodo aparece como n/d. Los tramos entre cierres no mensuales van punteados en el gráfico.</p>
 
         </div>
@@ -881,7 +943,7 @@ td.name {
 
 const DATA_FILE = "./BaseFFMM.xlsx";
 
-const NOMBRE_HOR = { CP: "Corto plazo", MP: "Mediano plazo" };
+const NOMBRE_HOR = { CP: "Corto plazo", MP: "Mediano plazo", ETF: "ETF" };
 
 const MES = ["ene","feb","mar","abr","may","jun","jul","ago","sep","oct","nov","dic"];
 
@@ -917,7 +979,7 @@ const calcGrupos = (serie, fondos) => {
   const fechas = [...new Set(serie.map((r) => r.fecha))].sort();
   const meses = (a, b) => (+b.slice(0, 4) - +a.slice(0, 4)) * 12 + (+b.slice(5, 7) - +a.slice(5, 7));
   const out = [];
-  ['CP', 'MP'].forEach((h) => {
+  ['CP', 'MP', 'ETF'].filter((h) => fondos.some((f) => f.horizonte === h)).forEach((h) => {
     let indice = 100;
     let prev = null;
     let prevFecha = null;
@@ -925,15 +987,18 @@ const calcGrupos = (serie, fondos) => {
       const cur = {};
       serie.filter((r) => r.fecha === fe && hor[r.id] === h).forEach((r) => { cur[r.id] = r; });
       const ids = Object.keys(cur);
+      if (!ids.length) return;
       let num = 0;
       let den = 0;
       if (prev) {
         ids.forEach((i) => {
           const p = prev[i];
           const c = cur[i];
-          if (p && p.vc != null && c.vc != null && p.patrimonio) {
-            num += p.patrimonio * (c.vc / p.vc - 1);
-            den += p.patrimonio;
+          // El ETF de referencia se compara por NAV: peso 1, sin patrimonio.
+          const w = h === 'ETF' ? 1 : p && p.patrimonio;
+          if (p && p.vc != null && c.vc != null && w) {
+            num += w * (c.vc / p.vc - 1);
+            den += w;
           }
         });
       }
@@ -943,8 +1008,8 @@ const calcGrupos = (serie, fondos) => {
         fecha: fe,
         horizonte: h,
         fondos: ids.filter((i) => cur[i].vc != null).length,
-        patrimonio: ids.reduce((s, i) => s + (cur[i].patrimonio || 0), 0),
-        participes: ids.reduce((s, i) => s + (cur[i].participes || 0), 0),
+        patrimonio: h === 'ETF' ? null : ids.reduce((s, i) => s + (cur[i].patrimonio || 0), 0),
+        participes: h === 'ETF' ? null : ids.reduce((s, i) => s + (cur[i].participes || 0), 0),
         ret,
         meses: prevFecha ? meses(prevFecha, fe) : null,
         indice,
@@ -956,27 +1021,30 @@ const calcGrupos = (serie, fondos) => {
   return out;
 };
 
-const calcRetornosGrupo = (grupos) => {
+const calcRetornosGrupo = (grupos, fondos) => {
   const eom = (y, m) => new Date(Date.UTC(y, m, 0)).toISOString().slice(0, 10);
-  const nombres = { CP: 'Corto plazo', MP: 'Mediano plazo' };
-  return ['CP', 'MP'].map((h) => {
-    const rows = grupos.filter((r) => r.horizonte === h).sort((a, b) => (a.fecha < b.fecha ? -1 : 1));
+  const hs = ['CP', 'MP', 'ETF'].filter((h) => grupos.some((r) => r.horizonte === h));
+  // Fecha de referencia: último cierre de los fondos mutuos (no del ETF).
+  const L = grupos.filter((r) => r.horizonte !== 'ETF').map((r) => r.fecha).sort().pop();
+  const y = +L.slice(0, 4);
+  const m = +L.slice(5, 7);
+  const etf = fondos.find((f) => f.horizonte === 'ETF');
+  const nombres = { CP: 'Corto plazo', MP: 'Mediano plazo', ETF: etf ? etf.fondo : 'ETF' };
+  return hs.map((h) => {
     const by = {};
-    rows.forEach((r) => { by[r.fecha] = r; });
-    const last = rows[rows.length - 1];
-    const L = last.fecha;
-    const y = +L.slice(0, 4);
-    const m = +L.slice(5, 7);
+    grupos.filter((r) => r.horizonte === h).forEach((r) => { by[r.fecha] = r; });
+    const last = by[L];
     const ret = (a, b) => (by[a] && by[b] ? by[b].indice / by[a].indice - 1 : null);
     const prevMes = by[eom(y, m - 1)];
+    const esETF = h === 'ETF';
     return {
       horizonte: h,
       nombre: nombres[h],
       fecha: L,
-      fondos: last.fondos,
-      patrimonio: last.patrimonio,
-      participes: last.participes,
-      var_pat: prevMes && prevMes.patrimonio ? last.patrimonio / prevMes.patrimonio - 1 : null,
+      fondos: last ? last.fondos : null,
+      patrimonio: esETF || !last ? null : last.patrimonio,
+      participes: esETF || !last ? null : last.participes,
+      var_pat: !esETF && last && prevMes && prevMes.patrimonio ? last.patrimonio / prevMes.patrimonio - 1 : null,
       r1m: ret(eom(y, m - 1), L),
       r3m: ret(eom(y, m - 3), L),
       rytd: ret((y - 1) + '-12-31', L),
@@ -989,8 +1057,10 @@ const calcRetornosGrupo = (grupos) => {
 };
 
 const calcFondosTab = (serie, fondos) => {
-  const fechas = [...new Set(serie.map((r) => r.fecha))].sort();
-  const L = fechas[fechas.length - 1];
+  const hor = {};
+  fondos.forEach((f) => { hor[f.id] = f.horizonte; });
+  // Fecha de referencia: último cierre de los fondos mutuos (no del ETF).
+  const L = serie.filter((r) => hor[r.id] !== 'ETF').map((r) => r.fecha).sort().pop();
   const y = +L.slice(0, 4);
   const m = +L.slice(5, 7);
   const eom = (yy, mm) => new Date(Date.UTC(yy, mm, 0)).toISOString().slice(0, 10);
@@ -1004,7 +1074,7 @@ const calcFondosTab = (serie, fondos) => {
   const total = {};
   fondos.forEach((f) => {
     const r = (at[f.id] || {})[L];
-    if (r) total[f.horizonte] = (total[f.horizonte] || 0) + (r.patrimonio || 0);
+    if (r && f.horizonte !== 'ETF') total[f.horizonte] = (total[f.horizonte] || 0) + (r.patrimonio || 0);
   });
   const d1 = eom(y, m - 1);
   const d3 = eom(y, m - 3);
@@ -1015,6 +1085,7 @@ const calcFondosTab = (serie, fondos) => {
   const e3 = (y - 4) + '-12-31';
   return fondos.map((f) => {
     const r = (at[f.id] || {})[L] || {};
+    const esETF = f.horizonte === 'ETF';
     return {
       id: f.id,
       nombre: f.fondo.replace(' ' + f.administradora, '').trim(),
@@ -1022,7 +1093,7 @@ const calcFondosTab = (serie, fondos) => {
       horizonte: f.horizonte,
       patrimonio: r.patrimonio == null ? null : r.patrimonio,
       participes: r.participes == null ? null : r.participes,
-      peso: r.patrimonio ? r.patrimonio / total[f.horizonte] : null,
+      peso: !esETF && r.patrimonio && total[f.horizonte] ? r.patrimonio / total[f.horizonte] : null,
       r1m: ret(f.id, d1, L),
       r3m: ret(f.id, d3, L),
       rytd: ret(f.id, e0, L),
@@ -1045,7 +1116,40 @@ function css(name) {
 }
 
 function colorHor(h) {
-    return h === "MP" ? css("--mp") : css("--primary");
+    return h === "MP" ? css("--mp") : h === "ETF" ? css("--ref") : css("--primary");
+}
+
+function mesesEntre(a, b) {
+    return (+b.slice(0, 4) - +a.slice(0, 4)) * 12 + (+b.slice(5, 7) - +a.slice(5, 7));
+}
+
+function pp(v) {
+    if (v === null || v === undefined) return "n/d";
+    return (v < 0 ? "−" : "+") + Math.abs(v * 100).toFixed(2) + " pp";
+}
+
+/* Puntos de una serie del índice, rebasados a 100 y alineados a los cierres de los fondos mutuos */
+
+function ptsIndice(rows, base, alineadas) {
+
+    const r = rows
+        .filter((g) => g.fecha >= base && alineadas.has(g.fecha))
+        .sort((a, b) => (a.fecha < b.fecha ? -1 : 1));
+
+    if (!r.length) return [];
+
+    const b0 = r[0].indice;
+
+    return r.map((g, i) => {
+        const v = (g.indice / b0) * 100;
+        const vPrev = i ? (r[i - 1].indice / b0) * 100 : null;
+        return {
+            fecha: g.fecha,
+            v,
+            ret: i ? v / vPrev - 1 : null,
+            meses: i ? mesesEntre(r[i - 1].fecha, g.fecha) : null
+        };
+    });
 }
 
 function baseLayout() {
@@ -1242,7 +1346,7 @@ function parseWorkbook(buffer) {
             horizonte: String(r.horizonte).trim().toUpperCase(),
             fecha_inicio: parseDateKey(r.fecha_inicio)
         }))
-        .filter((r) => r.id && (r.horizonte === "CP" || r.horizonte === "MP"));
+        .filter((r) => r.id && ["CP", "MP", "ETF"].includes(r.horizonte));
 
     serie = mapRows(rawData, ALIAS_DATA, "Data", ["fecha", "id", "vc", "patrimonio", "participes"])
         .map((r) => ({
@@ -1282,10 +1386,10 @@ function start(buffer, origin) {
     const unknown = parseWorkbook(buffer);
 
     grupos = calcGrupos(serie, fondos);
-    retornosGrupo = calcRetornosGrupo(grupos);
+    retornosGrupo = calcRetornosGrupo(grupos, fondos);
     fondosTab = calcFondosTab(serie, fondos);
 
-    const fechas = [...new Set(serie.map((r) => r.fecha))].sort();
+    const fechas = [...new Set(grupos.filter((g) => g.horizonte !== "ETF").map((g) => g.fecha))].sort();
 
     const bases = fechas.slice(0, -1);
     const prefer = (fechas[fechas.length - 1].slice(0, 4) - 1) + "-12-31";
@@ -1302,7 +1406,10 @@ function start(buffer, origin) {
     $("emptyScreen").style.display = "none";
     $("dashboard").style.display = "block";
 
-    let msg = `${origin} · ${fondos.length} fondos · ${serie.length} registros · ` +
+    const nMF = fondos.filter((f) => f.horizonte !== "ETF").length;
+    const etf = fondos.find((f) => f.horizonte === "ETF");
+
+    let msg = `${origin} · ${nMF} fondos${etf ? " + " + etf.fondo : ""} · ${serie.length} registros · ` +
               `${fechas.length} cierres · último cierre ${fLarga(fechas[fechas.length - 1])}`;
 
     if (unknown.length) {
@@ -1372,6 +1479,7 @@ $("fileInput").addEventListener("change", (event) => {
 function renderAll() {
 
     renderKpis();
+    renderEtfKpi();
     renderGroupTable();
     renderIndex();
     renderEquity();
@@ -1389,7 +1497,7 @@ window.matchMedia("(prefers-color-scheme: dark)").addEventListener("change", () 
 
 function renderKpis() {
 
-    retornosGrupo.forEach((g) => {
+    retornosGrupo.filter((g) => g.horizonte !== "ETF").forEach((g) => {
 
         const h = g.horizonte;
 
@@ -1407,6 +1515,40 @@ function renderKpis() {
         $(`k-${h}-participes`).textContent = entero(g.participes);
 
         $(`n-${h}`).textContent = `${g.fondos} fondos · cierre ${fLarga(g.fecha)}`;
+    });
+}
+
+
+/* ---------- ETF de referencia ---------- */
+
+function renderEtfKpi() {
+
+    const g = retornosGrupo.find((x) => x.horizonte === "ETF");
+
+    $("etfBlock").style.display = g ? "block" : "none";
+
+    if (!g) return;
+
+    const cp = retornosGrupo.find((x) => x.horizonte === "CP");
+    const mp = retornosGrupo.find((x) => x.horizonte === "MP");
+
+    $("etfName").textContent = g.nombre;
+
+    ["r1m", "r3m", "rytd"].forEach((f) => {
+        const el = $("k-ETF-" + f);
+        el.textContent = pct(g[f]);
+        el.className = "card-value " + signClass(g[f]);
+    });
+
+    const dif = (a, b) => (a === null || b === null || a === undefined || b === undefined ? null : a - b);
+
+    [["CP", cp], ["MP", mp]].forEach(([k, ref]) => {
+        const y = dif(g.rytd, ref && ref.rytd);
+        const m = dif(g.r1m, ref && ref.r1m);
+        const el = $("k-ETF-vs" + k);
+        el.textContent = pp(y);
+        el.className = "card-value " + signClass(y);
+        $("k-ETF-vs" + k + "1m").textContent = "1 mes: " + pp(m);
     });
 }
 
@@ -1462,7 +1604,7 @@ function lineTraces(series) {
             y: s.pts.map((p) => p.v),
             mode: "markers",
             name: s.name,
-            marker: { size: 8, color: s.color, line: { width: 1.5, color: css("--card") } },
+            marker: { size: s.symbol === "diamond" ? 10 : 8, symbol: s.symbol || "circle", color: s.color, line: { width: 1.5, color: css("--card") } },
             text: s.pts.map((p) =>
                 p.ret !== null && p.meses
                     ? `${pct(p.ret)} en ${p.meses} ${p.meses === 1 ? "mes" : "meses"}`
@@ -1528,25 +1670,24 @@ function drawLines(id, series) {
 
 function renderIndex() {
 
-    const series = ["CP", "MP"].map((h) => {
+    const alineadas = new Set(grupos.filter((g) => g.horizonte !== "ETF").map((g) => g.fecha));
 
-        const rows = grupos
-            .filter((g) => g.horizonte === h && g.fecha >= state.base)
-            .sort((a, b) => (a.fecha < b.fecha ? -1 : 1));
+    const series = ["CP", "MP", "ETF"]
+        .filter((h) => grupos.some((g) => g.horizonte === h))
+        .map((h) => {
 
-        const b0 = rows[0].indice;
+            const nombre = h === "ETF"
+                ? retornosGrupo.find((r) => r.horizonte === "ETF").nombre
+                : NOMBRE_HOR[h];
 
-        return {
-            name: NOMBRE_HOR[h],
-            color: colorHor(h),
-            pts: rows.map((g) => ({
-                fecha: g.fecha,
-                v: (g.indice / b0) * 100,
-                ret: g.ret,
-                meses: g.meses
-            }))
-        };
-    });
+            return {
+                name: nombre,
+                color: colorHor(h),
+                symbol: h === "ETF" ? "diamond" : "circle",
+                pts: ptsIndice(grupos.filter((g) => g.horizonte === h), state.base, alineadas)
+            };
+        })
+        .filter((s) => s.pts.length);
 
     drawLines("indexChart", series);
 }
@@ -1556,7 +1697,7 @@ function renderIndex() {
 
 function renderEquity() {
 
-    const fechas = [...new Set(grupos.map((g) => g.fecha))].sort();
+    const fechas = [...new Set(grupos.filter((g) => g.horizonte !== "ETF").map((g) => g.fecha))].sort();
 
     const traza = (h) => ({
 
@@ -1604,8 +1745,10 @@ function renderFundTable() {
 
     const { k, dir } = state.sort;
 
+    const etfRows = fondosTab.filter((r) => r.horizonte === "ETF");
+
     const rows = fondosTab
-        .filter((r) => state.hor === "ALL" || r.horizonte === state.hor)
+        .filter((r) => r.horizonte !== "ETF" && (state.hor === "ALL" || r.horizonte === state.hor))
         .slice()
         .sort((a, b) => {
             const x = a[k];
@@ -1626,9 +1769,9 @@ function renderFundTable() {
         maxAbs[f] = Math.max(0, ...fondosTab.map((r) => (r[f] === null ? 0 : Math.abs(r[f]))));
     });
 
-    $("fundTable").innerHTML = rows.map((r) => `
+    const fila = (r) => `
 
-        <tr data-id="${escapeHTML(r.id)}" class="${r.id === state.sel ? "selected" : ""}">
+        <tr ${r.horizonte === "ETF" ? 'class="ref"' : `data-id="${escapeHTML(r.id)}" class="${r.id === state.sel ? "selected" : ""}"`}>
 
             <td class="name" title="${escapeHTML(r.nombre)}">${escapeHTML(r.nombre)}</td>
 
@@ -1644,7 +1787,9 @@ function renderFundTable() {
 
         </tr>
 
-    `).join("");
+    `;
+
+    $("fundTable").innerHTML = etfRows.map(fila).join("") + rows.map(fila).join("");
 }
 
 
@@ -1653,7 +1798,7 @@ function renderFundTable() {
 function renderSize() {
 
     const rows = fondosTab
-        .filter((r) => r.patrimonio !== null)
+        .filter((r) => r.horizonte !== "ETF" && r.patrimonio !== null)
         .slice()
         .sort((a, b) => b.patrimonio - a.patrimonio);
 
@@ -1700,6 +1845,7 @@ function renderDetail() {
 
     if (!sel.options.length) {
         sel.innerHTML = fondosTab
+            .filter((r) => r.horizonte !== "ETF")
             .slice()
             .sort((a, b) => (b.patrimonio ?? 0) - (a.patrimonio ?? 0))
             .map((r) => `<option value="${escapeHTML(r.id)}">${escapeHTML(r.nombre)}</option>`)
@@ -1731,7 +1877,8 @@ function renderDetail() {
     const gBase = g.find((r) => r.fecha === b0).indice;
     const vBase = pts[0].vc;
 
-    const meses = (a, b) => (+b.slice(0, 4) - +a.slice(0, 4)) * 12 + (+b.slice(5, 7) - +a.slice(5, 7));
+    const meses = mesesEntre;
+    const alineadas = new Set(grupos.filter((r) => r.horizonte !== "ETF").map((r) => r.fecha));
 
     const sFondo = {
         name: f.nombre,
@@ -1755,7 +1902,23 @@ function renderDetail() {
         }))
     };
 
-    drawLines("detailChart", [sGrupo, sFondo]);
+    const lista = [sGrupo, sFondo];
+
+    const etfRows = grupos.filter((r) => r.horizonte === "ETF");
+
+    if (etfRows.length) {
+        const pe = ptsIndice(etfRows, b0, alineadas);
+        if (pe.length) {
+            lista.unshift({
+                name: retornosGrupo.find((r) => r.horizonte === "ETF").nombre,
+                color: colorHor("ETF"),
+                symbol: "diamond",
+                pts: pe
+            });
+        }
+    }
+
+    drawLines("detailChart", lista);
 }
 
 
