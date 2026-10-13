@@ -1,0 +1,1823 @@
+<!DOCTYPE html>
+<html lang="es">
+
+<head>
+
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+<title>Fondos mutuos en soles — Corto y mediano plazo</title>
+
+<!-- Tipografías -->
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+
+<!-- Excel -->
+<script src="https://cdn.jsdelivr.net/npm/xlsx@0.18.5/dist/xlsx.full.min.js"></script>
+
+<!-- Plotly -->
+<script src="https://cdn.plot.ly/plotly-2.35.2.min.js"></script>
+
+<style>
+
+:root {
+    --background: #f8f8f6;
+    --card: #ffffff;
+    --surface2: #f2f1ee;
+
+    --text: #1a1a18;
+    --muted: #6b6b67;
+    --hint: #9a9a96;
+
+    --border: rgba(0,0,0,0.10);
+    --border-md: rgba(0,0,0,0.18);
+
+    --primary: #1F4E79;
+    --primary-bg: #e8eef3;
+    --primary-text: #163449;
+
+    --mp: #BA7517;
+    --mp-bg: #faeeda;
+    --mp-text: #633806;
+
+    --green: #0F6E56;
+    --red: #A32D2D;
+    --amber: #BA7517;
+
+    --grid: #e8e7e3;
+    --radius: 8px;
+    --radius-lg: 12px;
+}
+
+@media (prefers-color-scheme: dark) {
+    :root {
+        --background: #1c1c1a;
+        --card: #252523;
+        --surface2: #2e2e2b;
+
+        --text: #f0efec;
+        --muted: #a0a09a;
+        --hint: #6e6e68;
+
+        --border: rgba(255,255,255,0.10);
+        --border-md: rgba(255,255,255,0.18);
+
+        --primary: #6FA0C7;
+        --primary-bg: #16283b;
+        --primary-text: #a9cbe4;
+
+        --mp: #EF9F27;
+        --mp-bg: #3d2408;
+        --mp-text: #fac775;
+
+        --green: #1D9E75;
+        --red: #E24B4A;
+        --amber: #EF9F27;
+
+        --grid: #3a3a37;
+    }
+}
+
+* {
+    box-sizing: border-box;
+}
+
+body {
+    margin: 0;
+    background: var(--background);
+    color: var(--text);
+    font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', system-ui, sans-serif;
+    font-size: 15px;
+}
+
+.container {
+    max-width: 1400px;
+    margin: auto;
+    padding: 2rem 1.5rem;
+}
+
+
+/* =========================
+   HEADER
+========================= */
+
+.header {
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-end;
+    gap: 1rem;
+    margin-bottom: 1.25rem;
+    padding-bottom: 1.25rem;
+    border-bottom: 0.5px solid var(--border);
+}
+
+.title {
+    font-size: 20px;
+    font-weight: 600;
+    margin: 0;
+    letter-spacing: -0.01em;
+}
+
+.subtitle {
+    color: var(--muted);
+    font-size: 13px;
+    margin-top: 4px;
+}
+
+
+/* =========================
+   STATUS
+========================= */
+
+.status {
+    display: flex;
+    align-items: center;
+    gap: 7px;
+    color: var(--muted);
+    font-size: 12px;
+    margin-bottom: 1.25rem;
+}
+
+.status::before {
+    content: '';
+    width: 7px;
+    height: 7px;
+    border-radius: 50%;
+    background: var(--green);
+    flex-shrink: 0;
+}
+
+.status.error::before {
+    background: var(--red);
+}
+
+
+/* =========================
+   CONTROLES
+========================= */
+
+.control-bar {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    flex-wrap: wrap;
+}
+
+.control-label {
+    font-size: 12.5px;
+    font-weight: 600;
+    color: var(--muted);
+}
+
+select,
+.seg button,
+.file-btn {
+    font-family: inherit;
+    border: 0.5px solid var(--border-md);
+    background: var(--card);
+    color: var(--text);
+    border-radius: var(--radius);
+    padding: 8px 12px;
+    font-size: 13px;
+    cursor: pointer;
+    transition: border-color 0.12s;
+}
+
+select:hover,
+.seg button:hover,
+.file-btn:hover {
+    border-color: var(--primary);
+}
+
+select:focus-visible,
+.seg button:focus-visible,
+th:focus-visible {
+    outline: 2px solid var(--primary);
+    outline-offset: 1px;
+}
+
+.seg {
+    display: inline-flex;
+}
+
+.seg button {
+    border-radius: 0;
+    margin-left: -0.5px;
+    padding: 7px 12px;
+    font-size: 12.5px;
+}
+
+.seg button:first-child {
+    border-radius: var(--radius) 0 0 var(--radius);
+    margin-left: 0;
+}
+
+.seg button:last-child {
+    border-radius: 0 var(--radius) var(--radius) 0;
+}
+
+.seg button[aria-pressed="true"] {
+    background: var(--primary-bg);
+    color: var(--primary-text);
+    border-color: var(--primary);
+}
+
+
+/* =========================
+   KPI CARDS
+========================= */
+
+.group-title {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    font-size: 13px;
+    font-weight: 600;
+    margin: 1.25rem 0 8px;
+}
+
+.group-title small {
+    color: var(--muted);
+    font-weight: 400;
+    font-size: 12px;
+}
+
+.dot {
+    width: 10px;
+    height: 10px;
+    border-radius: 50%;
+    flex-shrink: 0;
+}
+
+.dot.cp { background: var(--primary); }
+.dot.mp { background: var(--mp); }
+
+.cards {
+    display: grid;
+    grid-template-columns: repeat(5, minmax(0, 1fr));
+    gap: 10px;
+}
+
+.card {
+    background: var(--surface2);
+    border-radius: var(--radius);
+    padding: 14px 16px;
+}
+
+.card-label {
+    color: var(--muted);
+    font-size: 12px;
+    margin-bottom: 5px;
+}
+
+.card-value {
+    font-family: 'JetBrains Mono', ui-monospace, monospace;
+    font-size: 20px;
+    font-weight: 500;
+    line-height: 1.2;
+    letter-spacing: -0.02em;
+    font-variant-numeric: tabular-nums;
+}
+
+.card-note {
+    color: var(--hint);
+    font-size: 11px;
+    margin-top: 4px;
+}
+
+.card.card-hero.cp { background: var(--primary-bg); }
+.card.card-hero.mp { background: var(--mp-bg); }
+
+.card.card-hero.cp .card-label { font-size: 12.5px; font-weight: 600; color: var(--primary-text); }
+.card.card-hero.mp .card-label { font-size: 12.5px; font-weight: 600; color: var(--mp-text); }
+
+.card.card-hero .card-value {
+    font-size: 30px;
+    font-weight: 600;
+}
+
+
+/* =========================
+   PANELS
+========================= */
+
+.panel {
+    background: var(--card);
+    border: 0.5px solid var(--border);
+    border-radius: var(--radius-lg);
+    padding: 1rem 1.25rem;
+    margin-top: 1rem;
+}
+
+.panel-title {
+    font-size: 13px;
+    font-weight: 500;
+    color: var(--text);
+    margin: 0 0 12px;
+}
+
+.panel-primary {
+    border-top: 3px solid var(--primary);
+}
+
+.panel-primary .panel-title {
+    font-size: 14px;
+    font-weight: 600;
+}
+
+.panel-head {
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-start;
+    gap: 12px;
+    flex-wrap: wrap;
+    margin-bottom: 4px;
+}
+
+.main-chart {
+    height: 400px;
+}
+
+.small-chart {
+    height: 340px;
+}
+
+.two-columns {
+    display: grid;
+    grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
+    gap: 1rem;
+}
+
+.panel, .card, .two-columns > * {
+    min-width: 0;
+}
+
+.two-columns .panel {
+    margin-top: 1rem;
+}
+
+.chart-note {
+    color: var(--hint);
+    font-size: 11px;
+    margin: 10px 2px 0;
+    line-height: 1.5;
+}
+
+
+/* =========================
+   TABLE
+========================= */
+
+.table-container {
+    overflow: auto;
+    max-height: 520px;
+}
+
+table {
+    width: 100%;
+    border-collapse: collapse;
+    font-size: 13px;
+    white-space: nowrap;
+}
+
+th {
+    position: sticky;
+    top: 0;
+    background: var(--card);
+    color: var(--muted);
+    font-size: 11px;
+    font-weight: 500;
+    text-align: right;
+    padding: 11px 14px;
+    border-bottom: 0.5px solid var(--border-md);
+    z-index: 1;
+}
+
+th.sortable {
+    cursor: pointer;
+    user-select: none;
+}
+
+th.sortable:hover {
+    color: var(--text);
+}
+
+th[aria-sort="ascending"]::after { content: " ▲"; font-size: 9px; }
+th[aria-sort="descending"]::after { content: " ▼"; font-size: 9px; }
+
+th:first-child {
+    text-align: left;
+}
+
+td {
+    padding: 10px 14px;
+    border-bottom: 0.5px solid var(--border);
+    text-align: right;
+    color: var(--text);
+}
+
+td:first-child {
+    text-align: left;
+}
+
+tbody tr:hover td {
+    background: var(--surface2);
+}
+
+tbody tr.selected td:first-child {
+    box-shadow: inset 3px 0 0 var(--primary);
+}
+
+tbody tr[data-id] {
+    cursor: pointer;
+}
+
+.numeric {
+    font-family: 'JetBrains Mono', ui-monospace, monospace;
+    font-variant-numeric: tabular-nums;
+}
+
+.positive { color: var(--green); }
+.negative { color: var(--red); }
+.nd { color: var(--hint); }
+
+.tag {
+    font-size: 10.5px;
+    font-weight: 600;
+    padding: 2px 8px;
+    border-radius: 99px;
+}
+
+.tag.cp { background: var(--primary-bg); color: var(--primary-text); }
+.tag.mp { background: var(--mp-bg); color: var(--mp-text); }
+
+td.name {
+    max-width: 320px;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    font-weight: 500;
+}
+
+
+/* =========================
+   METODOLOGÍA
+========================= */
+
+.method {
+    color: var(--muted);
+    font-size: 12px;
+    line-height: 1.6;
+}
+
+.method p {
+    margin: 0 0 8px;
+}
+
+.method strong {
+    color: var(--text);
+    font-weight: 600;
+}
+
+
+/* =========================
+   EMPTY SCREEN
+========================= */
+
+.empty {
+    text-align: center;
+    padding: 70px 24px;
+    color: var(--muted);
+    font-size: 13px;
+    background: var(--card);
+    border: 0.5px solid var(--border);
+    border-radius: var(--radius-lg);
+}
+
+.empty strong {
+    display: block;
+    color: var(--text);
+    font-size: 14px;
+    font-weight: 500;
+    margin-bottom: 6px;
+}
+
+.empty .file-btn {
+    display: inline-block;
+    margin-top: 14px;
+}
+
+#fileInput {
+    display: none;
+}
+
+
+/* =========================
+   RESPONSIVE
+========================= */
+
+@media (max-width: 1100px) {
+    .cards { grid-template-columns: repeat(3, minmax(0, 1fr)); }
+}
+
+@media (max-width: 900px) {
+    .two-columns { grid-template-columns: minmax(0, 1fr); }
+}
+
+@media (max-width: 520px) {
+    .container { padding: 1rem; }
+    .cards { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+    .header { flex-direction: column; align-items: flex-start; }
+    .main-chart { height: 320px; }
+    .card-value { font-size: 17px; }
+    .card.card-hero .card-value { font-size: 24px; }
+}
+
+</style>
+
+</head>
+
+
+<body>
+
+<div class="container">
+
+
+    <!-- HEADER -->
+
+    <div class="header">
+
+        <div>
+
+            <h1 class="title">
+                Fondos mutuos en soles — Corto y mediano plazo
+            </h1>
+
+            <div class="subtitle">
+                Retornos ponderados por patrimonio, tamaño y comparación entre fondos · Fuente: SMV
+            </div>
+
+        </div>
+
+    </div>
+
+
+    <!-- STATUS -->
+
+    <div id="status" class="status">
+        Cargando datos...
+    </div>
+
+
+    <!-- EMPTY -->
+
+    <div id="emptyScreen" class="empty">
+
+        <strong id="emptyTitle">
+            Cargando dashboard
+        </strong>
+
+        <span id="emptyText">
+            Los datos se están cargando automáticamente.
+        </span>
+
+        <br>
+
+        <label class="file-btn" id="fileBtn" for="fileInput" style="display:none;">
+            Cargar archivo BaseFFMM.xlsx
+        </label>
+
+        <input type="file" id="fileInput" accept=".xlsx,.xls">
+
+    </div>
+
+
+    <!-- DASHBOARD -->
+
+    <div id="dashboard" style="display:none;">
+
+
+        <!-- KPI: CORTO PLAZO -->
+
+        <div class="group-title">
+            <span class="dot cp"></span>
+            Corto plazo
+            <small id="n-CP"></small>
+        </div>
+
+        <div class="cards">
+
+            <div class="card card-hero cp">
+                <div class="card-label">Retorno ponderado, 1 mes</div>
+                <div id="k-CP-r1m" class="card-value">—</div>
+                <div class="card-note">ponderado por patrimonio</div>
+            </div>
+
+            <div class="card">
+                <div class="card-label">3 meses</div>
+                <div id="k-CP-r3m" class="card-value">—</div>
+            </div>
+
+            <div class="card">
+                <div class="card-label">En el año</div>
+                <div id="k-CP-rytd" class="card-value">—</div>
+            </div>
+
+            <div class="card">
+                <div class="card-label">Patrimonio (S/ M)</div>
+                <div id="k-CP-patrimonio" class="card-value">—</div>
+                <div class="card-note" id="k-CP-var">—</div>
+            </div>
+
+            <div class="card">
+                <div class="card-label">Partícipes</div>
+                <div id="k-CP-participes" class="card-value">—</div>
+            </div>
+
+        </div>
+
+
+        <!-- KPI: MEDIANO PLAZO -->
+
+        <div class="group-title">
+            <span class="dot mp"></span>
+            Mediano plazo
+            <small id="n-MP"></small>
+        </div>
+
+        <div class="cards">
+
+            <div class="card card-hero mp">
+                <div class="card-label">Retorno ponderado, 1 mes</div>
+                <div id="k-MP-r1m" class="card-value">—</div>
+                <div class="card-note">ponderado por patrimonio</div>
+            </div>
+
+            <div class="card">
+                <div class="card-label">3 meses</div>
+                <div id="k-MP-r3m" class="card-value">—</div>
+            </div>
+
+            <div class="card">
+                <div class="card-label">En el año</div>
+                <div id="k-MP-rytd" class="card-value">—</div>
+            </div>
+
+            <div class="card">
+                <div class="card-label">Patrimonio (S/ M)</div>
+                <div id="k-MP-patrimonio" class="card-value">—</div>
+                <div class="card-note" id="k-MP-var">—</div>
+            </div>
+
+            <div class="card">
+                <div class="card-label">Partícipes</div>
+                <div id="k-MP-participes" class="card-value">—</div>
+            </div>
+
+        </div>
+
+
+        <!-- ÍNDICE PONDERADO -->
+
+        <div class="panel panel-primary">
+
+            <div class="panel-head">
+
+                <div class="panel-title">
+                    Índice ponderado por patrimonio — Corto vs mediano plazo
+                </div>
+
+                <div class="control-bar">
+                    <label class="control-label" for="baseSelector">Base 100</label>
+                    <select id="baseSelector"></select>
+                </div>
+
+            </div>
+
+            <div id="indexChart" class="main-chart"></div>
+
+            <div class="chart-note">
+
+                Índice encadenado: cada periodo pondera los retornos de los fondos por su patrimonio al inicio del periodo ·
+                Tramo punteado: no hay cierres intermedios entre esas fechas.
+
+            </div>
+
+        </div>
+
+
+        <!-- TABLA PONDERADA + PATRIMONIO -->
+
+        <div class="two-columns">
+
+            <div class="panel">
+
+                <div class="panel-title">
+                    Retorno ponderado por periodo
+                </div>
+
+                <div class="table-container">
+
+                    <table>
+
+                        <thead>
+                            <tr>
+                                <th>Horizonte</th>
+                                <th>1 mes</th>
+                                <th>3 meses</th>
+                                <th>En el año</th>
+                                <th>12 meses</th>
+                                <th id="th-ra1">—</th>
+                                <th id="th-ra2">—</th>
+                                <th id="th-ra3">—</th>
+                            </tr>
+                        </thead>
+
+                        <tbody id="groupTable"></tbody>
+
+                    </table>
+
+                </div>
+
+                <div class="chart-note">
+                    n/d: falta el cierre de comparación en la base.
+                </div>
+
+            </div>
+
+
+            <div class="panel">
+
+                <div class="panel-title">
+                    Patrimonio total por cierre (S/ mil millones)
+                </div>
+
+                <div id="equityChart" class="small-chart" style="height:280px;"></div>
+
+            </div>
+
+        </div>
+
+
+        <!-- TABLA DE FONDOS -->
+
+        <div class="panel">
+
+            <div class="panel-head">
+
+                <div class="panel-title">
+                    Fondos
+                </div>
+
+                <div class="seg" role="group" aria-label="Horizonte">
+                    <button type="button" data-h="ALL" aria-pressed="true">Todos</button>
+                    <button type="button" data-h="CP" aria-pressed="false">Corto plazo</button>
+                    <button type="button" data-h="MP" aria-pressed="false">Mediano plazo</button>
+                </div>
+
+            </div>
+
+            <div class="table-container">
+
+                <table>
+
+                    <thead>
+                        <tr id="fundHead">
+                            <th class="sortable" data-k="nombre" tabindex="0">Fondo</th>
+                            <th class="sortable" data-k="horizonte" tabindex="0">Hor.</th>
+                            <th class="sortable" data-k="patrimonio" tabindex="0">Patrimonio (S/ M)</th>
+                            <th class="sortable" data-k="participes" tabindex="0">Partícipes</th>
+                            <th class="sortable" data-k="r1m" tabindex="0">1 mes</th>
+                            <th class="sortable" data-k="r3m" tabindex="0">3 meses</th>
+                            <th class="sortable" data-k="rytd" tabindex="0">En el año</th>
+                            <th class="sortable" data-k="r12m" tabindex="0">12 meses</th>
+                            <th class="sortable" data-k="ra1" tabindex="0" id="tf-ra1">—</th>
+                            <th class="sortable" data-k="ra2" tabindex="0" id="tf-ra2">—</th>
+                        </tr>
+                    </thead>
+
+                    <tbody id="fundTable"></tbody>
+
+                </table>
+
+            </div>
+
+            <div class="chart-note">
+                Haz clic en un fondo para compararlo con el índice de su grupo.
+            </div>
+
+        </div>
+
+
+        <!-- BARRAS + DETALLE -->
+
+        <div class="two-columns">
+
+            <div class="panel">
+
+                <div class="panel-title">
+                    Patrimonio por fondo (S/ millones)
+                </div>
+
+                <div id="sizeChart" class="small-chart"></div>
+
+            </div>
+
+
+            <div class="panel">
+
+                <div class="panel-head">
+
+                    <div class="panel-title">
+                        Fondo vs. su grupo
+                    </div>
+
+                    <div class="control-bar">
+                        <label class="control-label" for="fundSelector">Fondo</label>
+                        <select id="fundSelector"></select>
+                    </div>
+
+                </div>
+
+                <div id="detailChart" class="small-chart"></div>
+
+                <div class="chart-note">
+                    Base 100 en la fecha base de arriba, o en el primer cierre del fondo.
+                </div>
+
+            </div>
+
+        </div>
+
+
+        <!-- METODOLOGÍA -->
+
+        <div class="panel method">
+
+            <div class="panel-title">
+                Cómo se calcula
+            </div>
+
+            <p><strong>Retorno ponderado.</strong> Para cada par de cierres consecutivos, el retorno del grupo es el promedio de los retornos de cada fondo (variación del valor cuota) ponderado por su patrimonio al inicio del periodo. Solo entran los fondos con valor cuota en ambos cierres.</p>
+
+            <p><strong>Índice y periodos.</strong> Los retornos de cada periodo se encadenan en un índice base 100. Un retorno de 1 mes, 3 meses o en el año es el cambio del índice entre los cierres correspondientes, por lo que los pesos se actualizan en cada cierre.</p>
+
+            <p><strong>Cierres faltantes.</strong> Donde falta el cierre de comparación, el periodo aparece como n/d. Los tramos entre cierres no mensuales van punteados en el gráfico.</p>
+
+        </div>
+
+
+    </div>
+
+</div>
+
+
+
+<script>
+
+/* =========================================================
+   CONFIGURACIÓN
+========================================================= */
+
+const DATA_FILE = "./BaseFFMM.xlsx";
+
+const NOMBRE_HOR = { CP: "Corto plazo", MP: "Mediano plazo" };
+
+const MES = ["ene","feb","mar","abr","may","jun","jul","ago","sep","oct","nov","dic"];
+
+
+/* =========================================================
+   VARIABLES
+========================================================= */
+
+let serie = [];
+let fondos = [];
+
+let grupos = [];
+let retornosGrupo = [];
+let fondosTab = [];
+
+const state = {
+    base: null,
+    sel: null,
+    hor: "ALL",
+    sort: { k: "patrimonio", dir: -1 }
+};
+
+const $ = (id) => document.getElementById(id);
+
+
+/* =========================================================
+   CÁLCULOS (misma lógica verificada del dashboard en Claude)
+========================================================= */
+
+const calcGrupos = (serie, fondos) => {
+  const hor = {};
+  fondos.forEach((f) => { hor[f.id] = f.horizonte; });
+  const fechas = [...new Set(serie.map((r) => r.fecha))].sort();
+  const meses = (a, b) => (+b.slice(0, 4) - +a.slice(0, 4)) * 12 + (+b.slice(5, 7) - +a.slice(5, 7));
+  const out = [];
+  ['CP', 'MP'].forEach((h) => {
+    let indice = 100;
+    let prev = null;
+    let prevFecha = null;
+    fechas.forEach((fe) => {
+      const cur = {};
+      serie.filter((r) => r.fecha === fe && hor[r.id] === h).forEach((r) => { cur[r.id] = r; });
+      const ids = Object.keys(cur);
+      let num = 0;
+      let den = 0;
+      if (prev) {
+        ids.forEach((i) => {
+          const p = prev[i];
+          const c = cur[i];
+          if (p && p.vc != null && c.vc != null && p.patrimonio) {
+            num += p.patrimonio * (c.vc / p.vc - 1);
+            den += p.patrimonio;
+          }
+        });
+      }
+      const ret = den > 0 ? num / den : null;
+      if (ret != null) indice = indice * (1 + ret);
+      out.push({
+        fecha: fe,
+        horizonte: h,
+        fondos: ids.filter((i) => cur[i].vc != null).length,
+        patrimonio: ids.reduce((s, i) => s + (cur[i].patrimonio || 0), 0),
+        participes: ids.reduce((s, i) => s + (cur[i].participes || 0), 0),
+        ret,
+        meses: prevFecha ? meses(prevFecha, fe) : null,
+        indice,
+      });
+      prev = cur;
+      prevFecha = fe;
+    });
+  });
+  return out;
+};
+
+const calcRetornosGrupo = (grupos) => {
+  const eom = (y, m) => new Date(Date.UTC(y, m, 0)).toISOString().slice(0, 10);
+  const nombres = { CP: 'Corto plazo', MP: 'Mediano plazo' };
+  return ['CP', 'MP'].map((h) => {
+    const rows = grupos.filter((r) => r.horizonte === h).sort((a, b) => (a.fecha < b.fecha ? -1 : 1));
+    const by = {};
+    rows.forEach((r) => { by[r.fecha] = r; });
+    const last = rows[rows.length - 1];
+    const L = last.fecha;
+    const y = +L.slice(0, 4);
+    const m = +L.slice(5, 7);
+    const ret = (a, b) => (by[a] && by[b] ? by[b].indice / by[a].indice - 1 : null);
+    const prevMes = by[eom(y, m - 1)];
+    return {
+      horizonte: h,
+      nombre: nombres[h],
+      fecha: L,
+      fondos: last.fondos,
+      patrimonio: last.patrimonio,
+      participes: last.participes,
+      var_pat: prevMes && prevMes.patrimonio ? last.patrimonio / prevMes.patrimonio - 1 : null,
+      r1m: ret(eom(y, m - 1), L),
+      r3m: ret(eom(y, m - 3), L),
+      rytd: ret((y - 1) + '-12-31', L),
+      r12m: ret(eom(y, m - 12), L),
+      ra1: ret((y - 2) + '-12-31', (y - 1) + '-12-31'),
+      ra2: ret((y - 3) + '-12-31', (y - 2) + '-12-31'),
+      ra3: ret((y - 4) + '-12-31', (y - 3) + '-12-31'),
+    };
+  });
+};
+
+const calcFondosTab = (serie, fondos) => {
+  const fechas = [...new Set(serie.map((r) => r.fecha))].sort();
+  const L = fechas[fechas.length - 1];
+  const y = +L.slice(0, 4);
+  const m = +L.slice(5, 7);
+  const eom = (yy, mm) => new Date(Date.UTC(yy, mm, 0)).toISOString().slice(0, 10);
+  const at = {};
+  serie.forEach((r) => { (at[r.id] = at[r.id] || {})[r.fecha] = r; });
+  const ret = (id, a, b) => {
+    const A = (at[id] || {})[a];
+    const B = (at[id] || {})[b];
+    return A && B && A.vc && B.vc ? B.vc / A.vc - 1 : null;
+  };
+  const total = {};
+  fondos.forEach((f) => {
+    const r = (at[f.id] || {})[L];
+    if (r) total[f.horizonte] = (total[f.horizonte] || 0) + (r.patrimonio || 0);
+  });
+  const d1 = eom(y, m - 1);
+  const d3 = eom(y, m - 3);
+  const d12 = eom(y, m - 12);
+  const e0 = (y - 1) + '-12-31';
+  const e1 = (y - 2) + '-12-31';
+  const e2 = (y - 3) + '-12-31';
+  const e3 = (y - 4) + '-12-31';
+  return fondos.map((f) => {
+    const r = (at[f.id] || {})[L] || {};
+    return {
+      id: f.id,
+      nombre: f.fondo.replace(' ' + f.administradora, '').trim(),
+      administradora: f.administradora,
+      horizonte: f.horizonte,
+      patrimonio: r.patrimonio == null ? null : r.patrimonio,
+      participes: r.participes == null ? null : r.participes,
+      peso: r.patrimonio ? r.patrimonio / total[f.horizonte] : null,
+      r1m: ret(f.id, d1, L),
+      r3m: ret(f.id, d3, L),
+      rytd: ret(f.id, e0, L),
+      r12m: ret(f.id, d12, L),
+      ra1: ret(f.id, e1, e0),
+      ra2: ret(f.id, e2, e1),
+      ra3: ret(f.id, e3, e2),
+    };
+  });
+};
+
+
+/* =========================================================
+   TEMA
+========================================================= */
+
+function css(name) {
+    return getComputedStyle(document.documentElement)
+        .getPropertyValue(name).trim();
+}
+
+function colorHor(h) {
+    return h === "MP" ? css("--mp") : css("--primary");
+}
+
+function baseLayout() {
+    return {
+        margin: { l: 55, r: 25, t: 10, b: 50 },
+        paper_bgcolor: "rgba(0,0,0,0)",
+        plot_bgcolor: "rgba(0,0,0,0)",
+        font: {
+            family: "Inter, system-ui, sans-serif",
+            size: 11,
+            color: css("--muted")
+        },
+        hoverlabel: {
+            bgcolor: css("--card"),
+            bordercolor: css("--border-md"),
+            font: {
+                family: "Inter, system-ui, sans-serif",
+                size: 11,
+                color: css("--text")
+            }
+        },
+        legend: { orientation: "h", y: 1.1, x: 0 }
+    };
+}
+
+const plotConfig = { responsive: true, displaylogo: false };
+
+
+/* =========================================================
+   FORMATOS
+========================================================= */
+
+function fCorta(s) {
+    return MES[+s.slice(5, 7) - 1] + " " + s.slice(2, 4);
+}
+
+function fLarga(s) {
+    return +s.slice(8, 10) + " " + MES[+s.slice(5, 7) - 1] + " " + s.slice(0, 4);
+}
+
+function pct(v) {
+    if (v === null || v === undefined) return "n/d";
+    return (v < 0 ? "−" : "+") + Math.abs(v * 100).toFixed(2) + "%";
+}
+
+function mill(v) {
+    if (v === null || v === undefined) return "—";
+    return (v / 1e6).toLocaleString("en-US", { maximumFractionDigits: 0 });
+}
+
+function entero(v) {
+    if (v === null || v === undefined) return "—";
+    return Math.round(v).toLocaleString("en-US");
+}
+
+function signClass(v) {
+    if (v === null || v === undefined) return "nd";
+    return v < 0 ? "negative" : v > 0 ? "positive" : "";
+}
+
+function escapeHTML(value) {
+    return String(value).replace(/[&<>"']/g, (c) => ({
+        "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#039;"
+    }[c]));
+}
+
+function tint(v, max) {
+    if (v === null || v === undefined || !max) return "";
+    const alpha = Math.min(28, (Math.abs(v) / max) * 28).toFixed(1);
+    return `background: color-mix(in srgb, var(${v >= 0 ? "--green" : "--red"}) ${alpha}%, transparent);`;
+}
+
+
+/* =========================================================
+   LECTURA DEL EXCEL
+========================================================= */
+
+function normalizeText(value) {
+    return String(value ?? "")
+        .normalize("NFD")
+        .replace(/[̀-ͯ]/g, "")
+        .replace(/\s+/g, " ")
+        .trim()
+        .toLowerCase();
+}
+
+const ALIAS_DATA = {
+    "fecha": "fecha",
+    "id": "id",
+    "valor cuota": "vc",
+    "patrimonio": "patrimonio",
+    "participes": "participes"
+};
+
+const ALIAS_FONDOS = {
+    "id": "id",
+    "fondo": "fondo",
+    "administradora": "administradora",
+    "horizonte": "horizonte",
+    "fecha inicio": "fecha_inicio"
+};
+
+function pad(n) {
+    return String(n).padStart(2, "0");
+}
+
+/* Devuelve "AAAA-MM-DD" sin pasar por zonas horarias */
+
+function parseDateKey(value) {
+
+    if (value === null || value === undefined || value === "") return null;
+
+    if (typeof value === "number") {
+        const p = XLSX.SSF.parse_date_code(value);
+        return p ? `${p.y}-${pad(p.m)}-${pad(p.d)}` : null;
+    }
+
+    if (value instanceof Date && !isNaN(value)) {
+        return `${value.getFullYear()}-${pad(value.getMonth() + 1)}-${pad(value.getDate())}`;
+    }
+
+    const text = String(value).trim();
+
+    let m = text.match(/^(\d{1,2})[\/\-](\d{1,2})[\/\-](\d{4})$/);
+    if (m) return `${m[3]}-${pad(m[2])}-${pad(m[1])}`;
+
+    m = text.match(/^(\d{4})-(\d{2})-(\d{2})/);
+    if (m) return `${m[1]}-${m[2]}-${m[3]}`;
+
+    return null;
+}
+
+function parseNumber(value) {
+
+    if (value === null || value === undefined || value === "") return null;
+    if (typeof value === "number") return value;
+
+    const n = parseFloat(String(value).trim().replace(/\s/g, "").replace(/,/g, ""));
+    return isNaN(n) ? null : n;
+}
+
+function mapRows(rawRows, aliases, sheetName, required) {
+
+    if (!rawRows.length) {
+        throw new Error(`La hoja "${sheetName}" está vacía.`);
+    }
+
+    const columnMap = {};
+
+    Object.keys(rawRows[0]).forEach((original) => {
+        const std = aliases[normalizeText(original)];
+        if (std) columnMap[std] = original;
+    });
+
+    const missing = required.filter((c) => !columnMap[c]);
+
+    if (missing.length) {
+        throw new Error(`Faltan columnas en la hoja "${sheetName}": ${missing.join(", ")}`);
+    }
+
+    return rawRows.map((row) => {
+        const out = {};
+        Object.keys(columnMap).forEach((std) => { out[std] = row[columnMap[std]]; });
+        return out;
+    });
+}
+
+function findSheet(workbook, name, fallbackIndex) {
+
+    const found = workbook.SheetNames.find((n) => normalizeText(n) === name);
+
+    return workbook.Sheets[found ?? workbook.SheetNames[fallbackIndex]];
+}
+
+function parseWorkbook(buffer) {
+
+    const workbook = XLSX.read(new Uint8Array(buffer), { type: "array" });
+
+    const sheetFondos = findSheet(workbook, "fondos", 0);
+    const sheetData = findSheet(workbook, "data", 1);
+
+    if (!sheetFondos || !sheetData) {
+        throw new Error('El Excel debe tener las hojas "Fondos" y "Data".');
+    }
+
+    const rawFondos = XLSX.utils.sheet_to_json(sheetFondos, { defval: "" });
+    const rawData = XLSX.utils.sheet_to_json(sheetData, { defval: "" });
+
+    fondos = mapRows(rawFondos, ALIAS_FONDOS, "Fondos", ["id", "fondo", "administradora", "horizonte"])
+        .map((r) => ({
+            id: String(r.id).trim(),
+            fondo: String(r.fondo).trim(),
+            administradora: String(r.administradora).trim(),
+            horizonte: String(r.horizonte).trim().toUpperCase(),
+            fecha_inicio: parseDateKey(r.fecha_inicio)
+        }))
+        .filter((r) => r.id && (r.horizonte === "CP" || r.horizonte === "MP"));
+
+    serie = mapRows(rawData, ALIAS_DATA, "Data", ["fecha", "id", "vc", "patrimonio", "participes"])
+        .map((r) => ({
+            fecha: parseDateKey(r.fecha),
+            id: String(r.id).trim(),
+            vc: parseNumber(r.vc),
+            patrimonio: parseNumber(r.patrimonio),
+            participes: parseNumber(r.participes)
+        }))
+        .filter((r) => r.fecha && r.id);
+
+    const known = new Set(fondos.map((f) => f.id));
+    const unknown = [...new Set(serie.filter((r) => !known.has(r.id)).map((r) => r.id))];
+
+    serie = serie.filter((r) => known.has(r.id));
+
+    if (!serie.length) {
+        throw new Error("No hay filas de la hoja Data que coincidan con los ID de la hoja Fondos.");
+    }
+
+    return unknown;
+}
+
+
+/* =========================================================
+   CARGA AUTOMÁTICA
+========================================================= */
+
+function setStatus(text, isError) {
+    const el = $("status");
+    el.textContent = text;
+    el.classList.toggle("error", !!isError);
+}
+
+function start(buffer, origin) {
+
+    const unknown = parseWorkbook(buffer);
+
+    grupos = calcGrupos(serie, fondos);
+    retornosGrupo = calcRetornosGrupo(grupos);
+    fondosTab = calcFondosTab(serie, fondos);
+
+    const fechas = [...new Set(serie.map((r) => r.fecha))].sort();
+
+    const bases = fechas.slice(0, -1);
+    const prefer = (fechas[fechas.length - 1].slice(0, 4) - 1) + "-12-31";
+
+    state.base = bases.includes(prefer) ? prefer : bases[0];
+    state.sel = null;
+
+    $("baseSelector").innerHTML = bases
+        .map((f) => `<option value="${f}">${fLarga(f)}</option>`)
+        .join("");
+
+    $("baseSelector").value = state.base;
+
+    $("emptyScreen").style.display = "none";
+    $("dashboard").style.display = "block";
+
+    let msg = `${origin} · ${fondos.length} fondos · ${serie.length} registros · ` +
+              `${fechas.length} cierres · último cierre ${fLarga(fechas[fechas.length - 1])}`;
+
+    if (unknown.length) {
+        msg += ` · ID sin catálogo ignorados: ${unknown.join(", ")}`;
+    }
+
+    setStatus(msg, false);
+
+    renderAll();
+}
+
+function showError(error) {
+
+    console.error("Error cargando datos:", error);
+
+    $("emptyTitle").textContent = "No se pudo cargar BaseFFMM.xlsx";
+    $("emptyText").textContent = error.message +
+        " — Si abriste el archivo con doble clic, el navegador bloquea la lectura automática: sírvelo desde GitHub Pages o carga el Excel manualmente.";
+    $("fileBtn").style.display = "inline-block";
+
+    setStatus("Error al cargar los datos", true);
+}
+
+async function loadExcel() {
+
+    try {
+
+        const response = await fetch(DATA_FILE + "?v=" + Date.now(), { cache: "no-store" });
+
+        if (!response.ok) {
+            throw new Error(`No se pudo encontrar ${DATA_FILE.replace("./", "")}. HTTP ${response.status}`);
+        }
+
+        start(await response.arrayBuffer(), DATA_FILE.replace("./", ""));
+
+    } catch (error) {
+
+        showError(error);
+
+    }
+}
+
+$("fileInput").addEventListener("change", (event) => {
+
+    const file = event.target.files[0];
+
+    if (!file) return;
+
+    const reader = new FileReader();
+
+    reader.onload = (e) => {
+        try {
+            start(e.target.result, file.name);
+        } catch (error) {
+            showError(error);
+        }
+    };
+
+    reader.readAsArrayBuffer(file);
+});
+
+
+/* =========================================================
+   RENDER
+========================================================= */
+
+function renderAll() {
+
+    renderKpis();
+    renderGroupTable();
+    renderIndex();
+    renderEquity();
+    renderFundTable();
+    renderSize();
+    renderDetail();
+}
+
+window.matchMedia("(prefers-color-scheme: dark)").addEventListener("change", () => {
+    if (grupos.length) renderAll();
+});
+
+
+/* ---------- KPIs ---------- */
+
+function renderKpis() {
+
+    retornosGrupo.forEach((g) => {
+
+        const h = g.horizonte;
+
+        ["r1m", "r3m", "rytd"].forEach((f) => {
+            const el = $(`k-${h}-${f}`);
+            el.textContent = pct(g[f]);
+            el.className = "card-value " + signClass(g[f]);
+        });
+
+        $(`k-${h}-patrimonio`).textContent = mill(g.patrimonio);
+        $(`k-${h}-var`).textContent = g.var_pat === null
+            ? "var. 1 mes: n/d"
+            : `${pct(g.var_pat)} vs. cierre anterior`;
+
+        $(`k-${h}-participes`).textContent = entero(g.participes);
+
+        $(`n-${h}`).textContent = `${g.fondos} fondos · cierre ${fLarga(g.fecha)}`;
+    });
+}
+
+
+/* ---------- Tabla ponderada ---------- */
+
+function renderGroupTable() {
+
+    const yr = +retornosGrupo[0].fecha.slice(0, 4);
+
+    $("th-ra1").textContent = yr - 1;
+    $("th-ra2").textContent = yr - 2;
+    $("th-ra3").textContent = yr - 3;
+
+    $("groupTable").innerHTML = retornosGrupo.map((g) => `
+
+        <tr>
+            <td><span class="tag ${g.horizonte.toLowerCase()}">${escapeHTML(g.nombre)}</span></td>
+            ${["r1m", "r3m", "rytd", "r12m", "ra1", "ra2", "ra3"].map((f) =>
+                `<td class="numeric ${signClass(g[f])}">${pct(g[f])}</td>`
+            ).join("")}
+        </tr>
+
+    `).join("");
+}
+
+
+/* ---------- Gráfico de líneas (índice y detalle) ---------- */
+
+function lineTraces(series) {
+
+    const traces = [];
+
+    series.forEach((s) => {
+
+        for (let i = 1; i < s.pts.length; i++) {
+
+            const a = s.pts[i - 1];
+            const b = s.pts[i];
+
+            traces.push({
+                x: [a.fecha, b.fecha],
+                y: [a.v, b.v],
+                mode: "lines",
+                line: { width: 2, color: s.color, dash: b.meses > 1 ? "dot" : "solid" },
+                showlegend: false,
+                hoverinfo: "skip"
+            });
+        }
+
+        traces.push({
+            x: s.pts.map((p) => p.fecha),
+            y: s.pts.map((p) => p.v),
+            mode: "markers",
+            name: s.name,
+            marker: { size: 8, color: s.color, line: { width: 1.5, color: css("--card") } },
+            text: s.pts.map((p) =>
+                p.ret !== null && p.meses
+                    ? `${pct(p.ret)} en ${p.meses} ${p.meses === 1 ? "mes" : "meses"}`
+                    : "base"
+            ),
+            customdata: s.pts.map((p) => fLarga(p.fecha)),
+            hovertemplate:
+                "<b>" + s.name + "</b>" +
+                "<br>%{customdata}" +
+                "<br>Índice: %{y:.1f}" +
+                "<br>%{text}" +
+                "<extra></extra>"
+        });
+    });
+
+    return traces;
+}
+
+function drawLines(id, series) {
+
+    const allDates = [...new Set(series.flatMap((s) => s.pts.map((q) => q.fecha)))].sort();
+    const step = Math.ceil(allDates.length / (window.innerWidth < 600 ? 4 : 8));
+    const tickDates = allDates.filter((_, i) => i % step === 0 || i === allDates.length - 1);
+
+    Plotly.react(
+
+        id,
+
+        lineTraces(series),
+
+        {
+            ...baseLayout(),
+
+            xaxis: {
+                type: "date",
+                gridcolor: css("--grid"),
+                zeroline: false,
+                tickvals: tickDates,
+                ticktext: tickDates.map(fCorta)
+            },
+
+            yaxis: {
+                title: "Índice (base 100)",
+                gridcolor: css("--grid"),
+                zeroline: false,
+                tickformat: ".1f"
+            },
+
+            shapes: [{
+                type: "line",
+                xref: "paper", x0: 0, x1: 1,
+                y0: 100, y1: 100,
+                line: { color: css("--hint"), width: 1, dash: "dash" }
+            }]
+        },
+
+        plotConfig
+    );
+}
+
+
+/* ---------- Índice ponderado ---------- */
+
+function renderIndex() {
+
+    const series = ["CP", "MP"].map((h) => {
+
+        const rows = grupos
+            .filter((g) => g.horizonte === h && g.fecha >= state.base)
+            .sort((a, b) => (a.fecha < b.fecha ? -1 : 1));
+
+        const b0 = rows[0].indice;
+
+        return {
+            name: NOMBRE_HOR[h],
+            color: colorHor(h),
+            pts: rows.map((g) => ({
+                fecha: g.fecha,
+                v: (g.indice / b0) * 100,
+                ret: g.ret,
+                meses: g.meses
+            }))
+        };
+    });
+
+    drawLines("indexChart", series);
+}
+
+
+/* ---------- Patrimonio total ---------- */
+
+function renderEquity() {
+
+    const fechas = [...new Set(grupos.map((g) => g.fecha))].sort();
+
+    const traza = (h) => ({
+
+        x: fechas.map(fCorta),
+
+        y: fechas.map((f) => {
+            const g = grupos.find((q) => q.fecha === f && q.horizonte === h);
+            return g ? g.patrimonio / 1e9 : 0;
+        }),
+
+        name: NOMBRE_HOR[h],
+        type: "bar",
+        marker: { color: colorHor(h) },
+        hovertemplate: "<b>" + NOMBRE_HOR[h] + "</b><br>%{x}<br>S/ %{y:.2f} mil M<extra></extra>"
+    });
+
+    Plotly.react(
+
+        "equityChart",
+
+        [traza("CP"), traza("MP")],
+
+        {
+            ...baseLayout(),
+            barmode: "stack",
+            bargap: 0.3,
+            margin: { l: 45, r: 15, t: 10, b: 45 },
+            xaxis: { type: "category", automargin: true },
+            yaxis: { gridcolor: css("--grid"), zeroline: false, ticksuffix: "" }
+        },
+
+        plotConfig
+    );
+}
+
+
+/* ---------- Tabla de fondos ---------- */
+
+function renderFundTable() {
+
+    const yr = +retornosGrupo[0].fecha.slice(0, 4);
+
+    $("tf-ra1").textContent = yr - 1;
+    $("tf-ra2").textContent = yr - 2;
+
+    const { k, dir } = state.sort;
+
+    const rows = fondosTab
+        .filter((r) => state.hor === "ALL" || r.horizonte === state.hor)
+        .slice()
+        .sort((a, b) => {
+            const x = a[k];
+            const y = b[k];
+            if (x === null && y === null) return 0;
+            if (x === null) return 1;
+            if (y === null) return -1;
+            return (typeof x === "string" ? x.localeCompare(y) : x - y) * dir;
+        });
+
+    document.querySelectorAll("#fundHead th").forEach((th) => {
+        th.setAttribute("aria-sort", th.dataset.k === k ? (dir > 0 ? "ascending" : "descending") : "none");
+    });
+
+    const maxAbs = {};
+
+    ["r1m", "r3m", "rytd", "r12m", "ra1", "ra2"].forEach((f) => {
+        maxAbs[f] = Math.max(0, ...fondosTab.map((r) => (r[f] === null ? 0 : Math.abs(r[f]))));
+    });
+
+    $("fundTable").innerHTML = rows.map((r) => `
+
+        <tr data-id="${escapeHTML(r.id)}" class="${r.id === state.sel ? "selected" : ""}">
+
+            <td class="name" title="${escapeHTML(r.nombre)}">${escapeHTML(r.nombre)}</td>
+
+            <td><span class="tag ${r.horizonte.toLowerCase()}">${r.horizonte}</span></td>
+
+            <td class="numeric">${mill(r.patrimonio)}</td>
+
+            <td class="numeric">${entero(r.participes)}</td>
+
+            ${["r1m", "r3m", "rytd", "r12m", "ra1", "ra2"].map((f) =>
+                `<td class="numeric ${signClass(r[f])}" style="${tint(r[f], maxAbs[f])}">${pct(r[f])}</td>`
+            ).join("")}
+
+        </tr>
+
+    `).join("");
+}
+
+
+/* ---------- Patrimonio por fondo ---------- */
+
+function renderSize() {
+
+    const rows = fondosTab
+        .filter((r) => r.patrimonio !== null)
+        .slice()
+        .sort((a, b) => b.patrimonio - a.patrimonio);
+
+    Plotly.react(
+
+        "sizeChart",
+
+        [{
+            x: rows.map((r) => r.patrimonio / 1e6),
+            y: rows.map((r) => r.nombre),
+            type: "bar",
+            orientation: "h",
+            marker: { color: rows.map((r) => colorHor(r.horizonte)) },
+            text: rows.map((r) => mill(r.patrimonio)),
+            textposition: "outside",
+            cliponaxis: false,
+            textfont: { size: 10, color: css("--muted") },
+            customdata: rows.map((r) => [r.horizonte, r.peso]),
+            hovertemplate:
+                "<b>%{y}</b>" +
+                "<br>Patrimonio: S/ %{x:,.0f} M" +
+                "<br>Peso en su horizonte: %{customdata[1]:.1%}" +
+                "<extra></extra>"
+        }],
+
+        {
+            ...baseLayout(),
+            margin: { l: 190, r: 50, t: 5, b: 35 },
+            xaxis: { gridcolor: css("--grid"), zeroline: false, tickformat: ",.0f" },
+            yaxis: { autorange: "reversed", automargin: true, tickfont: { size: 10 } },
+            showlegend: false
+        },
+
+        plotConfig
+    );
+}
+
+
+/* ---------- Fondo vs. su grupo ---------- */
+
+function renderDetail() {
+
+    const sel = $("fundSelector");
+
+    if (!sel.options.length) {
+        sel.innerHTML = fondosTab
+            .slice()
+            .sort((a, b) => (b.patrimonio ?? 0) - (a.patrimonio ?? 0))
+            .map((r) => `<option value="${escapeHTML(r.id)}">${escapeHTML(r.nombre)}</option>`)
+            .join("");
+    }
+
+    if (!state.sel || !fondosTab.some((r) => r.id === state.sel)) {
+        state.sel = sel.options[0].value;
+    }
+
+    sel.value = state.sel;
+
+    const f = fondosTab.find((r) => r.id === state.sel);
+
+    const pts = serie
+        .filter((r) => r.id === f.id && r.vc !== null && r.fecha >= state.base)
+        .sort((a, b) => (a.fecha < b.fecha ? -1 : 1));
+
+    if (!pts.length) {
+        Plotly.purge("detailChart");
+        return;
+    }
+
+    const g = grupos
+        .filter((r) => r.horizonte === f.horizonte)
+        .sort((a, b) => (a.fecha < b.fecha ? -1 : 1));
+
+    const b0 = pts[0].fecha;
+    const gBase = g.find((r) => r.fecha === b0).indice;
+    const vBase = pts[0].vc;
+
+    const meses = (a, b) => (+b.slice(0, 4) - +a.slice(0, 4)) * 12 + (+b.slice(5, 7) - +a.slice(5, 7));
+
+    const sFondo = {
+        name: f.nombre,
+        color: colorHor(f.horizonte),
+        pts: pts.map((r, i) => ({
+            fecha: r.fecha,
+            v: (r.vc / vBase) * 100,
+            ret: i ? r.vc / pts[i - 1].vc - 1 : null,
+            meses: i ? meses(pts[i - 1].fecha, r.fecha) : null
+        }))
+    };
+
+    const sGrupo = {
+        name: "Grupo " + NOMBRE_HOR[f.horizonte].toLowerCase() + " (ponderado)",
+        color: css("--hint"),
+        pts: g.filter((r) => r.fecha >= b0).map((r) => ({
+            fecha: r.fecha,
+            v: (r.indice / gBase) * 100,
+            ret: r.ret,
+            meses: r.meses
+        }))
+    };
+
+    drawLines("detailChart", [sGrupo, sFondo]);
+}
+
+
+/* =========================================================
+   EVENTOS
+========================================================= */
+
+$("baseSelector").addEventListener("change", (e) => {
+    state.base = e.target.value;
+    renderIndex();
+    renderDetail();
+});
+
+$("fundSelector").addEventListener("change", (e) => {
+    state.sel = e.target.value;
+    renderFundTable();
+    renderDetail();
+});
+
+document.querySelectorAll(".seg button").forEach((b) => {
+    b.addEventListener("click", () => {
+        state.hor = b.dataset.h;
+        document.querySelectorAll(".seg button").forEach((x) => x.setAttribute("aria-pressed", String(x === b)));
+        renderFundTable();
+    });
+});
+
+function sortBy(th) {
+
+    const k = th.dataset.k;
+
+    state.sort = state.sort.k === k
+        ? { k, dir: -state.sort.dir }
+        : { k, dir: k === "nombre" || k === "horizonte" ? 1 : -1 };
+
+    renderFundTable();
+}
+
+document.querySelectorAll("#fundHead th").forEach((th) => {
+    th.addEventListener("click", () => sortBy(th));
+    th.addEventListener("keydown", (e) => {
+        if (e.key === "Enter" || e.key === " ") { e.preventDefault(); sortBy(th); }
+    });
+});
+
+$("fundTable").addEventListener("click", (e) => {
+    const tr = e.target.closest("tr[data-id]");
+    if (!tr) return;
+    state.sel = tr.dataset.id;
+    renderFundTable();
+    renderDetail();
+});
+
+
+/* =========================================================
+   INICIO
+========================================================= */
+
+loadExcel();
+
+</script>
+
+</body>
+
+</html>
