@@ -6,7 +6,7 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 
-<title>Fondos mutuos en soles — Corto y mediano plazo</title>
+<title>Fondos mutuos en soles — Muy corto, corto y mediano plazo</title>
 
 <!-- Tipografías -->
 <link rel="preconnect" href="https://fonts.googleapis.com">
@@ -36,6 +36,10 @@
     --primary: #1F4E79;
     --primary-bg: #e8eef3;
     --primary-text: #163449;
+
+    --mcp: #0F6E56;
+    --mcp-bg: #e1f5ee;
+    --mcp-text: #04342c;
 
     --mp: #BA7517;
     --mp-bg: #faeeda;
@@ -70,6 +74,10 @@
         --primary: #6FA0C7;
         --primary-bg: #16283b;
         --primary-text: #a9cbe4;
+
+        --mcp: #5DCAA5;
+        --mcp-bg: #0b2a22;
+        --mcp-text: #9fe1cb;
 
         --mp: #EF9F27;
         --mp-bg: #3d2408;
@@ -258,6 +266,7 @@ th:focus-visible {
     flex-shrink: 0;
 }
 
+.dot.mcp { background: var(--mcp); }
 .dot.cp { background: var(--primary); }
 .dot.mp { background: var(--mp); }
 .dot.etf { background: var(--ref); border-radius: 2px; transform: rotate(45deg); width: 9px; height: 9px; }
@@ -295,13 +304,19 @@ th:focus-visible {
     margin-top: 4px;
 }
 
+.card.card-hero.mcp { background: var(--mcp-bg); }
 .card.card-hero.cp { background: var(--primary-bg); }
 .card.card-hero.mp { background: var(--mp-bg); }
 .card.card-hero.etf { background: var(--ref-bg); }
 
+.card.card-hero.mcp .card-label { font-size: 12.5px; font-weight: 600; color: var(--mcp-text); }
 .card.card-hero.cp .card-label { font-size: 12.5px; font-weight: 600; color: var(--primary-text); }
 .card.card-hero.mp .card-label { font-size: 12.5px; font-weight: 600; color: var(--mp-text); }
 .card.card-hero.etf .card-label { font-size: 12.5px; font-weight: 600; color: var(--ref-text); }
+
+.card.span2 { grid-column: span 2; }
+.vs-line { display: flex; justify-content: space-between; gap: 10px; font-family: 'JetBrains Mono', ui-monospace, monospace; font-size: 13px; padding: 2px 0; }
+.vs-line span:first-child { font-family: 'Inter', sans-serif; color: var(--muted); }
 
 .card.card-hero .card-value {
     font-size: 30px;
@@ -460,6 +475,7 @@ tbody tr[data-id] {
     border-radius: 99px;
 }
 
+.tag.mcp { background: var(--mcp-bg); color: var(--mcp-text); }
 .tag.cp { background: var(--primary-bg); color: var(--primary-text); }
 .tag.mp { background: var(--mp-bg); color: var(--mp-text); }
 .tag.etf { background: var(--ref-bg); color: var(--ref-text); }
@@ -565,7 +581,7 @@ td.name {
         <div>
 
             <h1 class="title">
-                Fondos mutuos en soles — Corto y mediano plazo
+                Fondos mutuos en soles — Muy corto, corto y mediano plazo
             </h1>
 
             <div class="subtitle">
@@ -612,7 +628,51 @@ td.name {
     <div id="dashboard" style="display:none;">
 
 
+        <!-- KPI: MUY CORTO PLAZO -->
+        <div id="blk-MCP" style="display:none;">
+
+        <div class="group-title">
+            <span class="dot mcp"></span>
+            Muy corto plazo
+            <small id="n-MCP"></small>
+        </div>
+
+        <div class="cards">
+
+            <div class="card card-hero mcp">
+                <div class="card-label">Retorno ponderado, 1 mes</div>
+                <div id="k-MCP-r1m" class="card-value">—</div>
+                <div class="card-note">ponderado por patrimonio</div>
+            </div>
+
+            <div class="card">
+                <div class="card-label">3 meses</div>
+                <div id="k-MCP-r3m" class="card-value">—</div>
+            </div>
+
+            <div class="card">
+                <div class="card-label">En el año</div>
+                <div id="k-MCP-rytd" class="card-value">—</div>
+            </div>
+
+            <div class="card">
+                <div class="card-label">Patrimonio (S/ M)</div>
+                <div id="k-MCP-patrimonio" class="card-value">—</div>
+                <div class="card-note" id="k-MCP-var">—</div>
+            </div>
+
+            <div class="card">
+                <div class="card-label">Partícipes</div>
+                <div id="k-MCP-participes" class="card-value">—</div>
+            </div>
+
+        </div>
+
+
+        </div>
+
         <!-- KPI: CORTO PLAZO -->
+        <div id="blk-CP" style="display:none;">
 
         <div class="group-title">
             <span class="dot cp"></span>
@@ -652,7 +712,10 @@ td.name {
         </div>
 
 
+        </div>
+
         <!-- KPI: MEDIANO PLAZO -->
+        <div id="blk-MP" style="display:none;">
 
         <div class="group-title">
             <span class="dot mp"></span>
@@ -692,6 +755,8 @@ td.name {
         </div>
 
 
+        </div>
+
         <!-- ETF DE REFERENCIA (solo si está en el Excel) -->
 
         <div id="etfBlock" style="display:none;">
@@ -720,16 +785,9 @@ td.name {
                     <div id="k-ETF-rytd" class="card-value">—</div>
                 </div>
 
-                <div class="card">
-                    <div class="card-label">Vs. corto plazo, en el año</div>
-                    <div id="k-ETF-vsCP" class="card-value">—</div>
-                    <div class="card-note" id="k-ETF-vsCP1m">—</div>
-                </div>
-
-                <div class="card">
-                    <div class="card-label">Vs. mediano plazo, en el año</div>
-                    <div id="k-ETF-vsMP" class="card-value">—</div>
-                    <div class="card-note" id="k-ETF-vsMP1m">—</div>
+                <div class="card span2">
+                    <div class="card-label">Diferencia del ETF vs. cada grupo (pp)</div>
+                    <div id="k-ETF-vs"></div>
                 </div>
 
             </div>
@@ -744,7 +802,7 @@ td.name {
             <div class="panel-head">
 
                 <div class="panel-title">
-                    Índice ponderado por patrimonio — Corto vs mediano plazo (y ETF de referencia)
+                    Índice ponderado por patrimonio — Muy corto, corto y mediano plazo (y ETF de referencia)
                 </div>
 
                 <div class="control-bar">
@@ -831,6 +889,7 @@ td.name {
 
                 <div class="seg" role="group" aria-label="Horizonte">
                     <button type="button" data-h="ALL" aria-pressed="true">Todos</button>
+                    <button type="button" data-h="MCP" aria-pressed="false">Muy corto plazo</button>
                     <button type="button" data-h="CP" aria-pressed="false">Corto plazo</button>
                     <button type="button" data-h="MP" aria-pressed="false">Mediano plazo</button>
                 </div>
@@ -922,9 +981,9 @@ td.name {
 
             <p><strong>Índice y periodos.</strong> Los retornos de cada periodo se encadenan en un índice base 100. Un retorno de 1 mes, 3 meses o en el año es el cambio del índice entre los cierres correspondientes, por lo que los pesos se actualizan en cada cierre.</p>
 
-            <p><strong>ETF de referencia.</strong> Si el Excel incluye un fondo con horizonte <strong>ETF</strong>, su retorno se calcula con su valor cuota (NAV) y se muestra al lado de los grupos para comparar. Su patrimonio y sus partícipes aparecen solo en su fila de la tabla de fondos: no entran en los promedios ponderados ni en los totales de corto y mediano plazo. Solo se comparan los cierres que coinciden con los de los fondos mutuos.</p>
+            <p><strong>ETF de referencia.</strong> Si el Excel incluye un fondo con horizonte <strong>ETF</strong>, su retorno se calcula con su valor cuota (NAV) y se muestra al lado de los grupos para comparar. Su patrimonio y sus partícipes aparecen solo en su fila de la tabla de fondos: no entran en los promedios ponderados ni en los totales de ningún grupo. Solo se comparan los cierres que coinciden con los de los fondos mutuos.</p>
 
-            <p><strong>Cierres faltantes.</strong> Donde falta el cierre de comparación, el periodo aparece como n/d. Los tramos entre cierres no mensuales van punteados en el gráfico.</p>
+            <p><strong>Cierres faltantes.</strong> Donde falta el cierre de comparación, el periodo aparece como n/d. Los tramos entre cierres no mensuales van punteados en el gráfico. Si el último dato no es fin de mes, el retorno de 1 mes y el del año corren desde el último cierre mensual (acumulado del mes), y el de 12 meses usa la misma fecha del año anterior cuando existe en el Excel.</p>
 
         </div>
 
@@ -943,7 +1002,8 @@ td.name {
 
 const DATA_FILE = "./BaseFFMM.xlsx";
 
-const NOMBRE_HOR = { CP: "Corto plazo", MP: "Mediano plazo", ETF: "ETF" };
+const ORDEN_HOR = ["MCP", "CP", "MP"];
+const NOMBRE_HOR = { MCP: "Muy corto plazo", CP: "Corto plazo", MP: "Mediano plazo", ETF: "ETF" };
 
 const MES = ["ene","feb","mar","abr","may","jun","jul","ago","sep","oct","nov","dic"];
 
@@ -979,7 +1039,7 @@ const calcGrupos = (serie, fondos) => {
   const fechas = [...new Set(serie.map((r) => r.fecha))].sort();
   const meses = (a, b) => (+b.slice(0, 4) - +a.slice(0, 4)) * 12 + (+b.slice(5, 7) - +a.slice(5, 7));
   const out = [];
-  ['CP', 'MP', 'ETF'].filter((h) => fondos.some((f) => f.horizonte === h)).forEach((h) => {
+  ['MCP', 'CP', 'MP', 'ETF'].filter((h) => fondos.some((f) => f.horizonte === h)).forEach((h) => {
     let indice = 100;
     let prev = null;
     let prevFecha = null;
@@ -1023,18 +1083,30 @@ const calcGrupos = (serie, fondos) => {
 
 const calcRetornosGrupo = (grupos, fondos) => {
   const eom = (y, m) => new Date(Date.UTC(y, m, 0)).toISOString().slice(0, 10);
-  const hs = ['CP', 'MP', 'ETF'].filter((h) => grupos.some((r) => r.horizonte === h));
+  const hs = ['MCP', 'CP', 'MP', 'ETF'].filter((h) => grupos.some((r) => r.horizonte === h));
   // Fecha de referencia: último cierre de los fondos mutuos (no del ETF).
   const L = grupos.filter((r) => r.horizonte !== 'ETF').map((r) => r.fecha).sort().pop();
   const y = +L.slice(0, 4);
   const m = +L.slice(5, 7);
+  const dim = (yy, mm) => new Date(Date.UTC(yy, mm, 0)).getUTCDate();
+  const d = +L.slice(8, 10);
+  // Misma fecha (o fin de mes) k meses atrás.
+  const sh = (k) => {
+    const t = new Date(Date.UTC(y, m - 1 - k, 1));
+    const yy = t.getUTCFullYear();
+    const mm = t.getUTCMonth() + 1;
+    return [yy + '-' + String(mm).padStart(2, '0') + '-' + String(Math.min(d, dim(yy, mm))).padStart(2, '0'), eom(yy, mm)];
+  };
   const etf = fondos.find((f) => f.horizonte === 'ETF');
-  const nombres = { CP: 'Corto plazo', MP: 'Mediano plazo', ETF: etf ? etf.fondo : 'ETF' };
+  const nombres = { MCP: 'Muy corto plazo', CP: 'Corto plazo', MP: 'Mediano plazo', ETF: etf ? etf.fondo : 'ETF' };
   return hs.map((h) => {
     const by = {};
     grupos.filter((r) => r.horizonte === h).forEach((r) => { by[r.fecha] = r; });
     const last = by[L];
     const ret = (a, b) => (by[a] && by[b] ? by[b].indice / by[a].indice - 1 : null);
+    // 1M y 3M: fin de mes anterior (acumulado del mes si L no es cierre); 12M: misma fecha del año anterior si existe.
+    const pick = (c) => c.find((x) => by[x]) || c[c.length - 1];
+    const f12 = pick(sh(12));
     const prevMes = by[eom(y, m - 1)];
     const esETF = h === 'ETF';
     return {
@@ -1048,7 +1120,7 @@ const calcRetornosGrupo = (grupos, fondos) => {
       r1m: ret(eom(y, m - 1), L),
       r3m: ret(eom(y, m - 3), L),
       rytd: ret((y - 1) + '-12-31', L),
-      r12m: ret(eom(y, m - 12), L),
+      r12m: ret(f12, L),
       ra1: ret((y - 2) + '-12-31', (y - 1) + '-12-31'),
       ra2: ret((y - 3) + '-12-31', (y - 2) + '-12-31'),
       ra3: ret((y - 4) + '-12-31', (y - 3) + '-12-31'),
@@ -1078,7 +1150,13 @@ const calcFondosTab = (serie, fondos) => {
   });
   const d1 = eom(y, m - 1);
   const d3 = eom(y, m - 3);
-  const d12 = eom(y, m - 12);
+  const dim = (yy, mm) => new Date(Date.UTC(yy, mm, 0)).getUTCDate();
+  const t12 = new Date(Date.UTC(y, m - 13, 1));
+  const y12 = t12.getUTCFullYear();
+  const m12 = t12.getUTCMonth() + 1;
+  const same12 = y12 + '-' + String(m12).padStart(2, '0') + '-' + String(Math.min(+L.slice(8, 10), dim(y12, m12))).padStart(2, '0');
+  const has = (dt) => serie.some((r) => r.fecha === dt);
+  const d12 = has(same12) ? same12 : eom(y12, m12);
   const e0 = (y - 1) + '-12-31';
   const e1 = (y - 2) + '-12-31';
   const e2 = (y - 3) + '-12-31';
@@ -1116,7 +1194,7 @@ function css(name) {
 }
 
 function colorHor(h) {
-    return h === "MP" ? css("--mp") : h === "ETF" ? css("--ref") : css("--primary");
+    return h === "MP" ? css("--mp") : h === "MCP" ? css("--mcp") : h === "ETF" ? css("--ref") : css("--primary");
 }
 
 function mesesEntre(a, b) {
@@ -1346,7 +1424,7 @@ function parseWorkbook(buffer) {
             horizonte: String(r.horizonte).trim().toUpperCase(),
             fecha_inicio: parseDateKey(r.fecha_inicio)
         }))
-        .filter((r) => r.id && ["CP", "MP", "ETF"].includes(r.horizonte));
+        .filter((r) => r.id && ["MCP", "CP", "MP", "ETF"].includes(r.horizonte));
 
     serie = mapRows(rawData, ALIAS_DATA, "Data", ["fecha", "id", "vc", "patrimonio", "participes"])
         .map((r) => ({
@@ -1497,6 +1575,11 @@ window.matchMedia("(prefers-color-scheme: dark)").addEventListener("change", () 
 
 function renderKpis() {
 
+    ORDEN_HOR.forEach((h) => {
+        const bl = $("blk-" + h);
+        if (bl) bl.style.display = retornosGrupo.some((g) => g.horizonte === h) ? "block" : "none";
+    });
+
     retornosGrupo.filter((g) => g.horizonte !== "ETF").forEach((g) => {
 
         const h = g.horizonte;
@@ -1529,9 +1612,6 @@ function renderEtfKpi() {
 
     if (!g) return;
 
-    const cp = retornosGrupo.find((x) => x.horizonte === "CP");
-    const mp = retornosGrupo.find((x) => x.horizonte === "MP");
-
     $("etfName").textContent = g.nombre;
 
     ["r1m", "r3m", "rytd"].forEach((f) => {
@@ -1542,14 +1622,13 @@ function renderEtfKpi() {
 
     const dif = (a, b) => (a === null || b === null || a === undefined || b === undefined ? null : a - b);
 
-    [["CP", cp], ["MP", mp]].forEach(([k, ref]) => {
-        const y = dif(g.rytd, ref && ref.rytd);
-        const m = dif(g.r1m, ref && ref.r1m);
-        const el = $("k-ETF-vs" + k);
-        el.textContent = pp(y);
-        el.className = "card-value " + signClass(y);
-        $("k-ETF-vs" + k + "1m").textContent = "1 mes: " + pp(m);
-    });
+    $("k-ETF-vs").innerHTML = retornosGrupo
+        .filter((r) => r.horizonte !== "ETF")
+        .map((r) => {
+            const y = dif(g.rytd, r.rytd);
+            const m = dif(g.r1m, r.r1m);
+            return `<div class="vs-line"><span>${escapeHTML(r.nombre)}</span><span class="${signClass(y)}">año ${pp(y)} · 1m ${pp(m)}</span></div>`;
+        }).join("");
 }
 
 
@@ -1672,7 +1751,7 @@ function renderIndex() {
 
     const alineadas = new Set(grupos.filter((g) => g.horizonte !== "ETF").map((g) => g.fecha));
 
-    const series = ["CP", "MP", "ETF"]
+    const series = [...ORDEN_HOR, "ETF"]
         .filter((h) => grupos.some((g) => g.horizonte === h))
         .map((h) => {
 
@@ -1697,7 +1776,9 @@ function renderIndex() {
 
 function renderEquity() {
 
-    const fechas = [...new Set(grupos.filter((g) => g.horizonte !== "ETF").map((g) => g.fecha))].sort();
+    // Solo el último cierre de cada mes (evita sumar dos cierres del mismo mes).
+    const fechas = [...new Set(grupos.filter((g) => g.horizonte !== "ETF").map((g) => g.fecha))].sort()
+        .filter((f, i, arr) => !arr[i + 1] || arr[i + 1].slice(0, 7) !== f.slice(0, 7));
 
     const traza = (h) => ({
 
@@ -1718,7 +1799,7 @@ function renderEquity() {
 
         "equityChart",
 
-        [traza("CP"), traza("MP")],
+        ORDEN_HOR.filter((h) => grupos.some((g) => g.horizonte === h)).map(traza),
 
         {
             ...baseLayout(),
