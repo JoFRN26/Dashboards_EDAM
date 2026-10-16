@@ -824,54 +824,39 @@ td.name {
         </div>
 
 
-        <!-- TABLA PONDERADA + PATRIMONIO -->
+        <!-- TABLA PONDERADA -->
 
-        <div class="two-columns">
+        <div class="panel">
 
-            <div class="panel">
+            <div class="panel-title">
+                Retorno ponderado por periodo
+            </div>
 
-                <div class="panel-title">
-                    Retorno ponderado por periodo
-                </div>
+            <div class="table-container">
 
-                <div class="table-container">
+                <table>
 
-                    <table>
+                    <thead>
+                        <tr>
+                            <th>Horizonte</th>
+                            <th>1 mes</th>
+                            <th>3 meses</th>
+                            <th>En el año</th>
+                            <th>12 meses</th>
+                            <th id="th-ra1">—</th>
+                            <th id="th-ra2">—</th>
+                            <th id="th-ra3">—</th>
+                        </tr>
+                    </thead>
 
-                        <thead>
-                            <tr>
-                                <th>Horizonte</th>
-                                <th>1 mes</th>
-                                <th>3 meses</th>
-                                <th>En el año</th>
-                                <th>12 meses</th>
-                                <th id="th-ra1">—</th>
-                                <th id="th-ra2">—</th>
-                                <th id="th-ra3">—</th>
-                            </tr>
-                        </thead>
+                    <tbody id="groupTable"></tbody>
 
-                        <tbody id="groupTable"></tbody>
-
-                    </table>
-
-                </div>
-
-                <div class="chart-note">
-                    n/d: falta el cierre de comparación en la base.
-                </div>
+                </table>
 
             </div>
 
-
-            <div class="panel">
-
-                <div class="panel-title">
-                    Patrimonio total por cierre (S/ mil millones)
-                </div>
-
-                <div id="equityChart" class="small-chart" style="height:280px;"></div>
-
+            <div class="chart-note">
+                n/d: falta el cierre de comparación en la base.
             </div>
 
         </div>
@@ -928,9 +913,46 @@ td.name {
         </div>
 
 
-        <!-- BARRAS + DETALLE -->
+        <!-- DETALLE: FONDO VS. SU GRUPO -->
+
+        <div class="panel">
+
+            <div class="panel-head">
+
+                <div class="panel-title">
+                    Fondo vs. su grupo
+                </div>
+
+                <div class="control-bar">
+                    <label class="control-label" for="fundSelector">Fondo</label>
+                    <select id="fundSelector"></select>
+                </div>
+
+            </div>
+
+            <div id="detailChart" class="main-chart"></div>
+
+            <div class="chart-note">
+                Base 100 en la fecha base de arriba, o en el primer cierre del fondo.
+            </div>
+
+        </div>
+
+
+        <!-- PATRIMONIO: TOTAL Y POR FONDO -->
 
         <div class="two-columns">
+
+            <div class="panel">
+
+                <div class="panel-title">
+                    Patrimonio total por cierre (S/ mil millones)
+                </div>
+
+                <div id="equityChart" class="small-chart"></div>
+
+            </div>
+
 
             <div class="panel">
 
@@ -939,30 +961,6 @@ td.name {
                 </div>
 
                 <div id="sizeChart" class="small-chart"></div>
-
-            </div>
-
-
-            <div class="panel">
-
-                <div class="panel-head">
-
-                    <div class="panel-title">
-                        Fondo vs. su grupo
-                    </div>
-
-                    <div class="control-bar">
-                        <label class="control-label" for="fundSelector">Fondo</label>
-                        <select id="fundSelector"></select>
-                    </div>
-
-                </div>
-
-                <div id="detailChart" class="small-chart"></div>
-
-                <div class="chart-note">
-                    Base 100 en la fecha base de arriba, o en el primer cierre del fondo.
-                </div>
 
             </div>
 
@@ -1984,20 +1982,6 @@ function renderDetail() {
     };
 
     const lista = [sGrupo, sFondo];
-
-    const etfRows = grupos.filter((r) => r.horizonte === "ETF");
-
-    if (etfRows.length) {
-        const pe = ptsIndice(etfRows, b0, alineadas);
-        if (pe.length) {
-            lista.unshift({
-                name: retornosGrupo.find((r) => r.horizonte === "ETF").nombre,
-                color: colorHor("ETF"),
-                symbol: "diamond",
-                pts: pe
-            });
-        }
-    }
 
     drawLines("detailChart", lista);
 }
