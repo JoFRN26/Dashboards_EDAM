@@ -808,6 +808,8 @@ td.name {
                 <div class="control-bar">
                     <label class="control-label" for="baseSelector">Base 100</label>
                     <select id="baseSelector"></select>
+                    <label class="control-label" for="corteSelector">Fecha de corte</label>
+                    <select id="corteSelector"></select>
                 </div>
 
             </div>
@@ -981,6 +983,8 @@ td.name {
 
             <p><strong>ETF de referencia.</strong> Si el Excel incluye un fondo con horizonte <strong>ETF</strong>, su retorno se calcula con su valor cuota (NAV) y se muestra al lado de los grupos para comparar. Su patrimonio y sus partícipes aparecen solo en su fila de la tabla de fondos: no entran en los promedios ponderados ni en los totales de ningún grupo. Solo se comparan los cierres que coinciden con los de los fondos mutuos.</p>
 
+            <p><strong>Fecha de corte.</strong> Por defecto es el último cierre del Excel, pero puedes elegir otra en el selector del índice: los KPIs, las tablas, los gráficos y los retornos de 1, 3 y 12 meses y del año se calculan hasta esa fecha. La fecha base solo puede ser anterior a la de corte.</p>
+
             <p><strong>Cierres faltantes.</strong> Donde falta el cierre de comparación, el periodo aparece como n/d. Los tramos entre cierres no mensuales van punteados en el gráfico. Si el último dato no es fin de mes, el retorno de 1 mes y el del año corren desde el último cierre mensual (acumulado del mes), y el de 12 meses usa la misma fecha del año anterior cuando existe en el Excel.</p>
 
         </div>
@@ -1019,6 +1023,7 @@ let fondosTab = [];
 
 const state = {
     base: null,
+    corte: null,
     sel: null,
     hor: "ALL",
     sort: { k: "patrimonio", dir: -1 }
@@ -1079,11 +1084,11 @@ const calcGrupos = (serie, fondos) => {
   return out;
 };
 
-const calcRetornosGrupo = (grupos, fondos) => {
+const calcRetornosGrupo = (grupos, fondos, corte) => {
   const eom = (y, m) => new Date(Date.UTC(y, m, 0)).toISOString().slice(0, 10);
   const hs = ['MCP', 'CP', 'MP', 'ETF'].filter((h) => grupos.some((r) => r.horizonte === h));
   // Fecha de referencia: último cierre de los fondos mutuos (no del ETF).
-  const L = grupos.filter((r) => r.horizonte !== 'ETF').map((r) => r.fecha).sort().pop();
+  const L = corte || grupos.filter((r) => r.horizonte !== 'ETF').map((r) => r.fecha).sort().pop();
   const y = +L.slice(0, 4);
   const m = +L.slice(5, 7);
   const dim = (yy, mm) => new Date(Date.UTC(yy, mm, 0)).getUTCDate();
@@ -1126,11 +1131,11 @@ const calcRetornosGrupo = (grupos, fondos) => {
   });
 };
 
-const calcFondosTab = (serie, fondos) => {
+const calcFondosTab = (serie, fondos, corte) => {
   const hor = {};
   fondos.forEach((f) => { hor[f.id] = f.horizonte; });
   // Fecha de referencia: último cierre de los fondos mutuos (no del ETF).
-  const L = serie.filter((r) => hor[r.id] !== 'ETF').map((r) => r.fecha).sort().pop();
+  const L = corte || serie.filter((r) => hor[r.id] !== 'ETF').map((r) => r.fecha).sort().pop();
   const y = +L.slice(0, 4);
   const m = +L.slice(5, 7);
   const eom = (yy, mm) => new Date(Date.UTC(yy, mm, 0)).toISOString().slice(0, 10);
@@ -1457,27 +1462,54 @@ function setStatus(text, isError) {
     el.classList.toggle("error", !!isError);
 }
 
-function start(buffer, origin) {
+function fechasMF() {
+    return [...new Set(grupos.filter((g) => g.horizonte !== "ETF").map((g) => g.fecha))].sort();
+}
 
-    const unknown = parseWorkbook(buffer);
+function recalcular() {
+    retornosGrupo = calcRetornosGrupo(grupos, fondos, state.corte);
+    fondosTab = calcFondosTab(serie, fondos, state.corte);
+}
 
-    grupos = calcGrupos(serie, fondos);
-    retornosGrupo = calcRetornosGrupo(grupos, fondos);
-    fondosTab = calcFondosTab(serie, fondos);
+/* Fechas base posibles: cierres anteriores a la fecha de corte */
 
-    const fechas = [...new Set(grupos.filter((g) => g.horizonte !== "ETF").map((g) => g.fecha))].sort();
+function llenarBases(forzar) {
 
-    const bases = fechas.slice(0, -1);
-    const prefer = (fechas[fechas.length - 1].slice(0, 4) - 1) + "-12-31";
+    const bases = fechasMF().filter((f) => f < state.corte);
+    const prefer = (+state.corte.slice(0, 4) - 1) + "-12-31";
 
-    state.base = bases.includes(prefer) ? prefer : bases[0];
-    state.sel = null;
+    if (forzar || !bases.includes(state.base)) {
+        state.base = bases.includes(prefer) ? prefer : bases[0];
+    }
 
     $("baseSelector").innerHTML = bases
         .map((f) => `<option value="${f}">${fLarga(f)}</option>`)
         .join("");
 
     $("baseSelector").value = state.base;
+}
+
+function start(buffer, origin) {
+
+    const unknown = parseWorkbook(buffer);
+
+    grupos = calcGrupos(serie, fondos);
+
+    const fechas = fechasMF();
+
+    state.corte = fechas[fechas.length - 1];
+    state.base = null;
+    state.sel = null;
+
+    $("corteSelector").innerHTML = fechas
+        .slice(1)
+        .map((f) => `<option value="${f}">${fLarga(f)}</option>`)
+        .join("");
+
+    $("corteSelector").value = state.corte;
+
+    recalcular();
+    llenarBases(true);
 
     $("emptyScreen").style.display = "none";
     $("dashboard").style.display = "block";
@@ -1747,7 +1779,7 @@ function drawLines(id, series) {
 
 function renderIndex() {
 
-    const alineadas = new Set(grupos.filter((g) => g.horizonte !== "ETF").map((g) => g.fecha));
+    const alineadas = new Set(fechasMF().filter((f) => f <= state.corte));
 
     const series = [...ORDEN_HOR, "ETF"]
         .filter((h) => grupos.some((g) => g.horizonte === h))
@@ -1775,7 +1807,7 @@ function renderIndex() {
 function renderEquity() {
 
     // Solo el último cierre de cada mes (evita sumar dos cierres del mismo mes).
-    const fechas = [...new Set(grupos.filter((g) => g.horizonte !== "ETF").map((g) => g.fecha))].sort()
+    const fechas = fechasMF().filter((f) => f <= state.corte)
         .filter((f, i, arr) => !arr[i + 1] || arr[i + 1].slice(0, 7) !== f.slice(0, 7));
 
     const traza = (h) => ({
@@ -1940,7 +1972,7 @@ function renderDetail() {
     const f = fondosTab.find((r) => r.id === state.sel);
 
     const pts = serie
-        .filter((r) => r.id === f.id && r.vc !== null && r.fecha >= state.base)
+        .filter((r) => r.id === f.id && r.vc !== null && r.fecha >= state.base && r.fecha <= state.corte)
         .sort((a, b) => (a.fecha < b.fecha ? -1 : 1));
 
     if (!pts.length) {
@@ -1973,7 +2005,7 @@ function renderDetail() {
     const sGrupo = {
         name: "Grupo " + NOMBRE_HOR[f.horizonte].toLowerCase() + " (ponderado)",
         color: css("--hint"),
-        pts: g.filter((r) => r.fecha >= b0).map((r) => ({
+        pts: g.filter((r) => r.fecha >= b0 && r.fecha <= state.corte).map((r) => ({
             fecha: r.fecha,
             v: (r.indice / gBase) * 100,
             ret: r.ret,
@@ -1995,6 +2027,13 @@ $("baseSelector").addEventListener("change", (e) => {
     state.base = e.target.value;
     renderIndex();
     renderDetail();
+});
+
+$("corteSelector").addEventListener("change", (e) => {
+    state.corte = e.target.value;
+    recalcular();
+    llenarBases(false);
+    renderAll();
 });
 
 $("fundSelector").addEventListener("change", (e) => {
