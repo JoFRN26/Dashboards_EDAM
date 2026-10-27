@@ -579,7 +579,7 @@ function sliceData(d) {
     const s = Math.max(0, d.DATES.length - n);
     for (let i = s; i < d.DATES.length; i++) indices.push(i);
   }
-  const keys = ['DATES','nav','vwap','navb','dur','durb','ytm','ytmb','cup','cupb','patrimonio','participes','volumen','operaciones','te30','te60','te180','te360','slip30','slip60','slip180','slip360','dis30','dis60','dis180','dis360','volmed30','volmed60','volmed180','volmed360','etf_ac','bench_ac','drawdown','maximumDrawdown'];
+  const keys = ['DATES','nav','vwap','navb','dur','durb','ytm','ytmb','cup','cupb','patrimonio','participes','volumen','operaciones','te30','te60','te180','te360','slip30','slip60','slip180','slip360','dis30','dis60','dis180','dis360','volmed30','volmed60','volmed180','volmed360','etf_ac','bench_ac','drawdown','maximumDrawdown','bas7','bas30','bas90'];
   const out = {};
   keys.forEach(k => { out[k] = Array.isArray(d[k]) ? indices.map(i => d[k][i]) : d[k]; });
   return out;
@@ -829,6 +829,16 @@ function renderCharts() {
     options: optsBase(v => Number(v).toFixed(2) + '%')
   });
 
+  charts.bas = new Chart(document.getElementById('basChart'), {
+    type: 'line',
+    data: { labels, datasets: [
+      {label:'BAS 7',  data:d.bas7,  borderColor:'#1F4E79', borderWidth:1.7, tension:0.3, fill:false},
+      {label:'BAS 30', data:d.bas30, borderColor:'#888780', borderWidth:1.5, tension:0.3, fill:false, borderDash:[4,3]},
+      {label:'BAS 90', data:d.bas90, borderColor:'#BA7517', borderWidth:1.5, tension:0.3, fill:false}
+    ]},
+    options: optsBase(v => Number(v).toFixed(2)+'%')
+  });
+ 
   charts.drawdown = new Chart(document.getElementById('drawdownChart'), {
     type: 'line',
     data: { labels, datasets: [
@@ -1137,9 +1147,13 @@ function handleFile(evt) {
       const iVolMed60 = col('vol mediana 60 días','vol mediana 60 dias','volmediana60','volmediana60d','volmediana60dias');
       const iVolMed180 = col('vol mediana 180 días','vol mediana 180 dias','volmediana180','volmediana180d','volmediana180dias');
       const iVolMed360 = col('vol mediana 360 días','vol mediana 360 dias','volmediana360','volmediana360d','volmediana360dias');
+      const BAS_FACTOR = 100;
+      const iBas7  = col('bas 7','bas7');
+      const iBas30 = col('bas 30','bas30');
+      const iBas90 = col('bas 90','bas90');
 
       const data = rows.slice(headerRow + 1).filter(r => r[iDate] !== undefined && r[iDate] !== '' && r[iNav] !== undefined && r[iNav] !== '');
-      const DATES=[],nav=[],vwap=[],navb=[],dur=[],durb=[],ytm=[],ytmb=[],cup=[],cupb=[],patrimonio=[],participes=[],volumen=[],operaciones=[],te30=[],te60=[],te180=[],te360=[],slip30=[],slip60=[],slip180=[],slip360=[],dis30=[],dis60=[],dis180=[],dis360=[],volmed30=[],volmed60=[],volmed180=[],volmed360=[],etf_ac=[],bench_ac=[],drawdown=[],maximumDrawdown=[];
+      const DATES=[],nav=[],vwap=[],navb=[],dur=[],durb=[],ytm=[],ytmb=[],cup=[],cupb=[],patrimonio=[],participes=[],volumen=[],operaciones=[],te30=[],te60=[],te180=[],te360=[],slip30=[],slip60=[],slip180=[],slip360=[],dis30=[],dis60=[],dis180=[],dis360=[],volmed30=[],volmed60=[],volmed180=[],volmed360=[],bas7=[],bas30=[],bas90=[],etf_ac=[],bench_ac=[],drawdown=[],maximumDrawdown=[];
 
       data.forEach(r => {
         const rawDate = r[iDate];
@@ -1178,6 +1192,12 @@ function handleFile(evt) {
         volmed60.push(iVolMed60>=0 ? num(r[iVolMed60]) : null);
         volmed180.push(iVolMed180>=0 ? num(r[iVolMed180]) : null);
         volmed360.push(iVolMed360>=0 ? num(r[iVolMed360]) : null);
+        const b7  = iBas7  >= 0 ? num(r[iBas7])  : null;
+        const b30 = iBas30 >= 0 ? num(r[iBas30]) : null;
+        const b90 = iBas90 >= 0 ? num(r[iBas90]) : null;
+        bas7.push(b7   !== null ? b7  * BAS_FACTOR : null);
+        bas30.push(b30 !== null ? b30 * BAS_FACTOR : null);
+        bas90.push(b90 !== null ? b90 * BAS_FACTOR : null);
         // Retorno acumulado: usa columna si existe, sino calcula desde NAV
         etf_ac.push(iEtfAc>=0   ? parseFloat(r[iEtfAc])||0   : parseFloat(((nav[nav.length-1]/nav[0]-1)*100).toFixed(4)));
         bench_ac.push(iBenchAc>=0 ? parseFloat(r[iBenchAc])||0 : parseFloat(((navb[navb.length-1]/navb[0]-1)*100).toFixed(4)));
@@ -1197,7 +1217,7 @@ function handleFile(evt) {
         }
       }
 
-      DATA = {DATES, nav, vwap, navb, dur, durb, ytm, ytmb, cup, cupb, patrimonio, participes, volumen, operaciones, te30, te60, te180, te360, slip30, slip60, slip180, slip360, dis30, dis60, dis180, dis360, volmed30, volmed60, volmed180, volmed360, etf_ac, bench_ac, drawdown, maximumDrawdown};
+      DATA = {DATES, nav, vwap, navb, dur, durb, ytm, ytmb, cup, cupb, patrimonio, participes, volumen, operaciones, te30, te60, te180, te360, slip30, slip60, slip180, slip360, dis30, dis60, dis180, dis360, volmed30, volmed60, volmed180, volmed360, etf_ac, bench_ac, drawdown, maximumDrawdown, bas7, bas30, bas90};
       document.getElementById('status-text').textContent = '✓ '+file.name+' — '+data.length+' días cargados | YTM: '+(iYtm>=0?'ETFPESOV ✓':'—')+'/'+(iYtmb>=0?'Benchmark ✓':'—')+' | Cupón: '+(iCup>=0?'ETFPESOV ✓':'—')+'/'+(iCupb>=0?'Benchmark ✓':'—')+' | NAV/VWAP: '+(iNav>=0?'✓':'—')+'/'+(iVwap>=0?'✓':'—')+' | TE: '+(iTe30>=0?'✓':'—')+'/'+(iTe60>=0?'✓':'—')+'/'+(iTe180>=0?'✓':'—')+'/'+(iTe360>=0?'✓':'—')+' | Slippage: '+(iSlip30>=0?'✓':'—')+'/'+(iSlip60>=0?'✓':'—')+'/'+(iSlip180>=0?'✓':'—')+'/'+(iSlip360>=0?'✓':'—')+' | Drawdown: '+(iDrawdown>=0?'✓':'—')+'/'+(iMaxDrawdown>=0?'✓':'—')+' | Dislocation: '+(iDis30>=0?'✓':'—')+'/'+(iDis60>=0?'✓':'—')+'/'+(iDis180>=0?'✓':'—')+'/'+(iDis360>=0?'✓':'—')+' | Vol Mediana: '+(iVolMed30>=0?'✓':'—')+'/'+(iVolMed60>=0?'✓':'—')+'/'+(iVolMed180>=0?'✓':'—')+'/'+(iVolMed360>=0?'✓':'—');
       document.getElementById('nav-date').textContent = DATES[0]+' – '+DATES[DATES.length-1];
       syncDateControls();
