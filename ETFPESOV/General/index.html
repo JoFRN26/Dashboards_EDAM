@@ -256,6 +256,17 @@
     </div>
   </div>
 
+  <!-- Tarjetas de patrimonio y actividad -->
+  <div class="metric-section">
+    <div class="sec-label etf-label">Patrimonio y negociación</div>
+    <div class="metric-row">
+      <div class="metric etf"><div class="m-label">Patrimonio</div><div class="m-value" id="m-pat">—</div><div class="m-sub">último dato</div></div>
+      <div class="metric etf"><div class="m-label">Partícipes</div><div class="m-value" id="m-part">—</div><div class="m-sub">último dato</div></div>
+      <div class="metric etf"><div class="m-label">Volumen</div><div class="m-value" id="m-vol">—</div><div class="m-sub">último dato</div></div>
+      <div class="metric etf"><div class="m-label">Operaciones</div><div class="m-value" id="m-ops">—</div><div class="m-sub">último dato</div></div>
+    </div>
+  </div>
+ 
   <!-- Tarjetas de tracking / ejecución -->
   <div class="metric-section">
     <div class="sec-label etf-label">Ejecución y tracking</div>
@@ -969,6 +980,14 @@ function updateKPIs(d) {
   document.getElementById('m-slip60').textContent = fmtPct(lastValid('slip60'));
   document.getElementById('m-slip180').textContent = fmtPct(lastValid('slip180'));
   document.getElementById('m-slip360').textContent = fmtPct(lastValid('slip360'));
+  const patV = lastValid('patrimonio');
+  const partV = lastValid('participes');
+  const volV = lastValid('volumen');
+  const opsV = lastValid('operaciones');
+  document.getElementById('m-pat').textContent  = patV  === null ? '—' : 'S/ ' + (patV/1000000).toFixed(2) + ' M';
+  document.getElementById('m-part').textContent = partV === null ? '—' : Math.round(partV).toLocaleString('es-PE');
+  document.getElementById('m-vol').textContent  = volV  === null ? '—' : Math.round(volV).toLocaleString('es-PE');
+  document.getElementById('m-ops').textContent  = opsV  === null ? '—' : Math.round(opsV).toLocaleString('es-PE');
 }
 
 function setRange(btn, r) {
