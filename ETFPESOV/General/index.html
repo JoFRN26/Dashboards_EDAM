@@ -329,9 +329,9 @@
     <div class="card">
       <div class="card-header"><span class="card-title">Bid-Ask Spread</span></div>
       <div class="legend">
-        <div class="legend-item"><div class="legend-dot" style="background:#1F4E79;"></div>BAS 7</div>
-        <div class="legend-item"><div class="legend-dot" style="background:#888780;"></div>BAS 30</div>
-        <div class="legend-item"><div class="legend-dot" style="background:#BA7517;"></div>BAS 90</div>
+        <div class="legend-item"><div class="legend-dot" style="background:#1F4E79;"></div>7 días</div>
+        <div class="legend-item"><div class="legend-dot" style="background:#888780;"></div>30 días</div>
+        <div class="legend-item"><div class="legend-dot" style="background:#BA7517;"></div>90 días</div>
       </div>
       <div style="position:relative;width:100%;height:260px;">
         <canvas id="basChart" role="img" aria-label="Bid-Ask Spread de 7, 30 y 90 días"></canvas>
@@ -832,9 +832,9 @@ function renderCharts() {
   charts.bas = new Chart(document.getElementById('basChart'), {
     type: 'line',
     data: { labels, datasets: [
-      {label:'BAS 7',  data:d.bas7,  borderColor:'#1F4E79', borderWidth:1.7, tension:0.3, fill:false},
-      {label:'BAS 30', data:d.bas30, borderColor:'#888780', borderWidth:1.5, tension:0.3, fill:false, borderDash:[4,3]},
-      {label:'BAS 90', data:d.bas90, borderColor:'#BA7517', borderWidth:1.5, tension:0.3, fill:false}
+      {label:'7 días',  data:d.bas7,  borderColor:'#1F4E79', borderWidth:1.7, tension:0.3, fill:false},
+      {label:'30 días', data:d.bas30, borderColor:'#888780', borderWidth:1.5, tension:0.3, fill:false, borderDash:[4,3]},
+      {label:'90 días', data:d.bas90, borderColor:'#BA7517', borderWidth:1.5, tension:0.3, fill:false}
     ]},
     options: optsBase(v => Number(v).toFixed(2)+'%')
   });
