@@ -984,7 +984,7 @@ function updateKPIs(d) {
   const partV = lastValid('participes');
   const volV = lastValid('volumen');
   const opsV = lastValid('operaciones');
-  document.getElementById('m-pat').textContent  = patV  === null ? '—' : 'S/ ' + (patV/1000000).toFixed(2) + ' M';
+  document.getElementById('m-pat').textContent  = patV  === null ? '—' : 'S/ ' + Math.round(patV).toLocaleString('es-PE');
   document.getElementById('m-part').textContent = partV === null ? '—' : Math.round(partV).toLocaleString('es-PE');
   document.getElementById('m-vol').textContent  = volV  === null ? '—' : 'S/ ' + Math.round(volV).toLocaleString('es-PE');
   document.getElementById('m-ops').textContent  = opsV  === null ? '—' : Math.round(opsV).toLocaleString('es-PE');
